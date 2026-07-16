@@ -34,6 +34,11 @@ export default function NavBar({ user, onLogout }) {
                 <li className="nav-item">
                   <NavLink className={linkClass} to="/maintenance">Maintenance</NavLink>
                 </li>
+                {user.role === 'admin' && (
+                  <li className="nav-item">
+                    <NavLink className={linkClass} to="/activity-log">Activity Log</NavLink>
+                  </li>
+                )}
               </ul>
               <div className="d-flex align-items-center text-white me-3">
                 {user.profile_image ? (
