@@ -10,6 +10,8 @@ export default function Workers({ user }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [form, setForm] = useState({ name: '', phone: '', type: '', salary: '' });
+  const [profileFile, setProfileFile] = useState(null);
+  const [profileKey, setProfileKey] = useState(Date.now());
   const [editId, setEditId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -30,12 +32,23 @@ export default function Workers({ user }) {
     event.preventDefault();
     setError('');
     try {
+      const formData = new FormData();
+      formData.append('name', form.name);
+      formData.append('phone', form.phone);
+      formData.append('type', form.type);
+      formData.append('salary', form.salary);
+      if (profileFile) {
+        formData.append('profile', profileFile);
+      }
+
       if (editId) {
-        await api.put(`/workers/${editId}`, form);
+        await api.put(`/workers/${editId}`, formData);
       } else {
-        await api.post('/workers', form);
+        await api.post('/workers', formData);
       }
       setForm({ name: '', phone: '', type: '', salary: '' });
+      setProfileFile(null);
+      setProfileKey(Date.now());
       setEditId(null);
       loadWorkers();
     } catch (err) {
@@ -46,6 +59,8 @@ export default function Workers({ user }) {
   const startEdit = (worker) => {
     setEditId(worker.id);
     setForm({ name: worker.name, phone: worker.phone || '', type: worker.type || '', salary: worker.salary || '' });
+    setProfileFile(null);
+    setProfileKey(Date.now());
   };
 
   const handleDelete = async (id) => {
@@ -82,6 +97,7 @@ export default function Workers({ user }) {
     total: workers.length,
     filtered: filteredWorkers.length,
   };
+  const baseUrl = api.defaults.baseURL || '';
 
   return (
     <div>
@@ -119,10 +135,21 @@ export default function Workers({ user }) {
                   <label className="form-label">Salary</label>
                   <input className="form-control" type="number" min="0" step="0.01" value={form.salary} onChange={(e) => setForm({ ...form, salary: e.target.value })} />
                 </div>
+                <div className="col-md-6">
+                  <label className="form-label">Profile Image</label>
+                  <input
+                    key={profileKey}
+                    className="form-control"
+                    type="file"
+                    accept="image/png, image/jpeg"
+                    onChange={(e) => setProfileFile(e.target.files[0] || null)}
+                  />
+                  {editId && <small className="text-muted">Leave blank to keep existing profile</small>}
+                </div>
               </div>
               <div className="mt-3">
                 <button className="btn btn-primary me-2" type="submit">{editId ? 'Update Worker' : 'Add Worker'}</button>
-                {editId && <button className="btn btn-secondary" type="button" onClick={() => { setEditId(null); setForm({ name: '', phone: '', type: '', salary: '' }); }}>Cancel</button>}
+                {editId && <button className="btn btn-secondary" type="button" onClick={() => { setEditId(null); setForm({ name: '', phone: '', type: '', salary: '' }); setProfileFile(null); setProfileKey(Date.now()); }}>Cancel</button>}
               </div>
             </form>
           </div>
@@ -152,6 +179,7 @@ export default function Workers({ user }) {
             <table className="table mb-0">
               <thead>
                 <tr>
+                  <th>Profile</th>
                   <th>Name</th>
                   <th>Type</th>
                   <th>Phone</th>
@@ -162,6 +190,20 @@ export default function Workers({ user }) {
               <tbody>
                 {displayedWorkers.map((worker) => (
                   <tr key={worker.id}>
+                    <td>
+                      {worker.profile_image ? (
+                        <img
+                          src={`${baseUrl}/uploads/${worker.profile_image}`}
+                          alt={worker.name}
+                          className="rounded-circle"
+                          style={{ width: 36, height: 36, objectFit: 'cover' }}
+                        />
+                      ) : (
+                        <div className="bg-secondary text-white rounded-circle d-inline-flex justify-content-center align-items-center" style={{ width: 36, height: 36 }}>
+                          {worker.name?.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </td>
                     <td>{worker.name}</td>
                     <td>{worker.type}</td>
                     <td>{worker.phone}</td>

@@ -10,6 +10,8 @@ export default function Members({ user }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [form, setForm] = useState({ name: '', email: '', phone: '', flat_no: '', password: '' });
+  const [profileFile, setProfileFile] = useState(null);
+  const [profileKey, setProfileKey] = useState(Date.now());
   const [editId, setEditId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
@@ -30,12 +32,26 @@ export default function Members({ user }) {
     event.preventDefault();
     setError('');
     try {
+      const formData = new FormData();
+      formData.append('name', form.name);
+      formData.append('email', form.email);
+      formData.append('phone', form.phone);
+      formData.append('flat_no', form.flat_no);
+      if (form.password) {
+        formData.append('password', form.password);
+      }
+      if (profileFile) {
+        formData.append('profile', profileFile);
+      }
+
       if (editId) {
-        await api.put(`/members/${editId}`, form);
+        await api.put(`/members/${editId}`, formData);
       } else {
-        await api.post('/members', form);
+        await api.post('/members', formData);
       }
       setForm({ name: '', email: '', phone: '', flat_no: '', password: '' });
+      setProfileFile(null);
+      setProfileKey(Date.now());
       setEditId(null);
       loadMembers();
     } catch (err) {
@@ -46,6 +62,8 @@ export default function Members({ user }) {
   const startEdit = (member) => {
     setEditId(member.id);
     setForm({ name: member.name, email: member.email, phone: member.phone || '', flat_no: member.flat_no || '', password: '' });
+    setProfileFile(null);
+    setProfileKey(Date.now());
   };
 
   const handleDelete = async (id) => {
@@ -82,6 +100,7 @@ export default function Members({ user }) {
     total: members.length,
     filtered: filteredMembers.length,
   };
+  const baseUrl = api.defaults.baseURL || '';
 
   return (
     <div>
@@ -123,10 +142,21 @@ export default function Members({ user }) {
                   <label className="form-label">Password</label>
                   <input className="form-control" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder={editId ? 'Leave blank to keep current password' : ''} />
                 </div>
+                <div className="col-md-6">
+                  <label className="form-label">Profile Image</label>
+                  <input
+                    key={profileKey}
+                    className="form-control"
+                    type="file"
+                    accept="image/png, image/jpeg"
+                    onChange={(e) => setProfileFile(e.target.files[0] || null)}
+                  />
+                  {editId && <small className="text-muted">Leave blank to keep existing profile</small>}
+                </div>
               </div>
               <div className="mt-3">
                 <button className="btn btn-primary me-2" type="submit">{editId ? 'Update Member' : 'Add Member'}</button>
-                {editId && <button className="btn btn-secondary" type="button" onClick={() => { setEditId(null); setForm({ name: '', email: '', phone: '', flat_no: '', password: '' }); }}>Cancel</button>}
+                {editId && <button className="btn btn-secondary" type="button" onClick={() => { setEditId(null); setForm({ name: '', email: '', phone: '', flat_no: '', password: '' }); setProfileFile(null); setProfileKey(Date.now()); }}>Cancel</button>}
               </div>
             </form>
           </div>
@@ -156,6 +186,7 @@ export default function Members({ user }) {
             <table className="table mb-0">
               <thead>
                 <tr>
+                  <th>Profile</th>
                   <th>Name</th>
                   <th>Email</th>
                   <th>Phone</th>
@@ -166,6 +197,20 @@ export default function Members({ user }) {
               <tbody>
                 {displayedMembers.map((member) => (
                   <tr key={member.id}>
+                    <td>
+                      {member.profile_image ? (
+                        <img
+                          src={`${baseUrl}/uploads/${member.profile_image}`}
+                          alt={member.name}
+                          className="rounded-circle"
+                          style={{ width: 36, height: 36, objectFit: 'cover' }}
+                        />
+                      ) : (
+                        <div className="bg-secondary text-white rounded-circle d-inline-flex justify-content-center align-items-center" style={{ width: 36, height: 36 }}>
+                          {member.name?.charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </td>
                     <td>{member.name}</td>
                     <td>{member.email}</td>
                     <td>{member.phone}</td>

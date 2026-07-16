@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link, NavLink } from 'react-router-dom';
+import api from '../api';
 
 export default function NavBar({ user, onLogout }) {
   const linkClass = ({ isActive }) => `nav-link${isActive ? ' active' : ''}`;
@@ -34,7 +35,21 @@ export default function NavBar({ user, onLogout }) {
                   <NavLink className={linkClass} to="/maintenance">Maintenance</NavLink>
                 </li>
               </ul>
-              <span className="navbar-text text-white me-3">{user.name} ({user.role})</span>
+              <div className="d-flex align-items-center text-white me-3">
+                {user.profile_image ? (
+                  <img
+                    src={`${api.defaults.baseURL}/uploads/${user.profile_image}`}
+                    alt={user.name}
+                    className="rounded-circle me-2"
+                    style={{ width: 32, height: 32, objectFit: 'cover' }}
+                  />
+                ) : (
+                  <div className="bg-secondary text-white rounded-circle d-inline-flex justify-content-center align-items-center me-2" style={{ width: 32, height: 32 }}>
+                    {user.name?.charAt(0).toUpperCase()}
+                  </div>
+                )}
+                <span>{user.name} ({user.role})</span>
+              </div>
               <button className="btn btn-outline-light" onClick={onLogout}>Logout</button>
             </>
           ) : (

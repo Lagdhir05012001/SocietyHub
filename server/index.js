@@ -37,9 +37,10 @@ function parsePositiveNumber(value) {
   return parsed;
 }
 
-app.post('/auth/register', async (req, res) => {
+app.post('/auth/register', upload.single('profile'), async (req, res) => {
   try {
     const { name, email, password, phone, flat_no } = req.body;
+    const profileImage = req.file ? req.file.filename : null;
     if (!name || !email || !password || !flat_no) {
       return res.status(400).json({ error: 'Name, email, password and flat number are required' });
     }
@@ -51,12 +52,12 @@ app.post('/auth/register', async (req, res) => {
 
     const passwordHash = await bcrypt.hash(password, 10);
     const result = await query(
-      'INSERT INTO users (name, email, password, phone, flat_no, role) VALUES (?, ?, ?, ?, ?, ?)',
-      [name, email, passwordHash, phone || '', flat_no, 'member']
+      'INSERT INTO users (name, email, password, phone, flat_no, role, profile_image) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [name, email, passwordHash, phone || '', flat_no, 'member', profileImage]
     );
 
-    const user = { id: result.insertId, role: 'member', name };
-    const token = jwt.sign(user, secret, { expiresIn: '8h' });
+    const user = { id: result.insertId, role: 'member', name, email, profile_image: profileImage };
+    const token = jwt.sign({ id: user.id, role: user.role, name: user.name }, secret, { expiresIn: '8h' });
     res.json({ token, user });
   } catch (error) {
     console.error(error);
@@ -71,7 +72,7 @@ app.post('/auth/login', async (req, res) => {
       return res.status(400).json({ error: 'Email and password are required' });
     }
 
-    const [user] = await query('SELECT id, name, email, password, role FROM users WHERE email = ?', [email]);
+    const [user] = await query('SELECT id, name, email, password, role, profile_image FROM users WHERE email = ?', [email]);
     if (!user) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
@@ -82,7 +83,7 @@ app.post('/auth/login', async (req, res) => {
     }
 
     const token = jwt.sign({ id: user.id, role: user.role, name: user.name }, secret, { expiresIn: '8h' });
-    res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role } });
+    res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role, profile_image: user.profile_image } });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Login failed' });
@@ -118,7 +119,7 @@ app.get('/dashboard', verifyToken, async (req, res) => {
 
 app.get('/members', verifyToken, async (req, res) => {
   try {
-    const members = await query('SELECT id, name, email, phone, flat_no, created_at FROM users WHERE role = ? ORDER BY created_at DESC', ['member']);
+    const members = await query('SELECT id, name, email, phone, flat_no, profile_image, created_at FROM users WHERE role = ? ORDER BY created_at DESC', ['member']);
     res.json(members);
   } catch (error) {
     console.error(error);
@@ -128,7 +129,7 @@ app.get('/members', verifyToken, async (req, res) => {
 
 app.get('/members/:id', verifyToken, async (req, res) => {
   try {
-    const [member] = await query('SELECT id, name, email, phone, flat_no, created_at FROM users WHERE id = ? AND role = ?', [req.params.id, 'member']);
+    const [member] = await query('SELECT id, name, email, phone, flat_no, profile_image, created_at FROM users WHERE id = ? AND role = ?', [req.params.id, 'member']);
     if (!member) {
       return res.status(404).json({ error: 'Member not found' });
     }
@@ -139,9 +140,10 @@ app.get('/members/:id', verifyToken, async (req, res) => {
   }
 });
 
-app.post('/members', verifyToken, requireAdmin, async (req, res) => {
+app.post('/members', verifyToken, requireAdmin, upload.single('profile'), async (req, res) => {
   try {
     const { name, email, phone, flat_no, password } = req.body;
+    const profileImage = req.file ? req.file.filename : null;
     if (!name || !email || !flat_no) {
       return res.status(400).json({ error: 'Name, email and flat number are required' });
     }
@@ -150,13 +152,14 @@ app.post('/members', verifyToken, requireAdmin, async (req, res) => {
       return res.status(409).json({ error: 'Email already exists' });
     }
     const passwordHash = await bcrypt.hash(password || 'member123', 10);
-    await query('INSERT INTO users (name, email, phone, flat_no, password, role) VALUES (?, ?, ?, ?, ?, ?)', [
+    await query('INSERT INTO users (name, email, phone, flat_no, password, role, profile_image) VALUES (?, ?, ?, ?, ?, ?, ?)', [
       name,
       email,
       phone || '',
       flat_no,
       passwordHash,
       'member',
+      profileImage,
     ]);
     res.status(201).json({ message: 'Member created' });
   } catch (error) {
@@ -165,9 +168,10 @@ app.post('/members', verifyToken, requireAdmin, async (req, res) => {
   }
 });
 
-app.put('/members/:id', verifyToken, requireAdmin, async (req, res) => {
+app.put('/members/:id', verifyToken, requireAdmin, upload.single('profile'), async (req, res) => {
   try {
     const { name, email, phone, flat_no, password } = req.body;
+    const profileImage = req.file ? req.file.filename : null;
     const fields = [];
     const values = [];
     if (name) {
@@ -190,6 +194,10 @@ app.put('/members/:id', verifyToken, requireAdmin, async (req, res) => {
       const passwordHash = await bcrypt.hash(password, 10);
       fields.push('password = ?');
       values.push(passwordHash);
+    }
+    if (profileImage) {
+      fields.push('profile_image = ?');
+      values.push(profileImage);
     }
     if (!fields.length) {
       return res.status(400).json({ error: 'No updates provided' });
@@ -218,7 +226,7 @@ app.delete('/members/:id', verifyToken, requireAdmin, async (req, res) => {
 
 app.get('/workers', verifyToken, async (req, res) => {
   try {
-    const workers = await query('SELECT id, name, phone, type, salary, created_at FROM workers ORDER BY created_at DESC');
+    const workers = await query('SELECT id, name, phone, type, salary, profile_image, created_at FROM workers ORDER BY created_at DESC');
     res.json(workers);
   } catch (error) {
     console.error(error);
@@ -228,7 +236,7 @@ app.get('/workers', verifyToken, async (req, res) => {
 
 app.get('/workers/:id', verifyToken, async (req, res) => {
   try {
-    const [worker] = await query('SELECT id, name, phone, type, salary, created_at FROM workers WHERE id = ?', [req.params.id]);
+    const [worker] = await query('SELECT id, name, phone, type, salary, profile_image, created_at FROM workers WHERE id = ?', [req.params.id]);
     if (!worker) {
       return res.status(404).json({ error: 'Worker not found' });
     }
@@ -239,9 +247,10 @@ app.get('/workers/:id', verifyToken, async (req, res) => {
   }
 });
 
-app.post('/workers', verifyToken, requireAdmin, async (req, res) => {
+app.post('/workers', verifyToken, requireAdmin, upload.single('profile'), async (req, res) => {
   try {
     const { name, phone, type, salary } = req.body;
+    const profileImage = req.file ? req.file.filename : null;
     if (!name || !type) {
       return res.status(400).json({ error: 'Name and type are required' });
     }
@@ -249,7 +258,7 @@ app.post('/workers', verifyToken, requireAdmin, async (req, res) => {
     if (salaryValue === null) {
       return res.status(400).json({ error: 'Salary must be a non-negative number' });
     }
-    await query('INSERT INTO workers (name, phone, type, salary) VALUES (?, ?, ?, ?)', [name, phone || '', type, salaryValue]);
+    await query('INSERT INTO workers (name, phone, type, salary, profile_image) VALUES (?, ?, ?, ?, ?)', [name, phone || '', type, salaryValue, profileImage]);
     res.status(201).json({ message: 'Worker created' });
   } catch (error) {
     console.error(error);
@@ -257,9 +266,10 @@ app.post('/workers', verifyToken, requireAdmin, async (req, res) => {
   }
 });
 
-app.put('/workers/:id', verifyToken, requireAdmin, async (req, res) => {
+app.put('/workers/:id', verifyToken, requireAdmin, upload.single('profile'), async (req, res) => {
   try {
     const { name, phone, type, salary } = req.body;
+    const profileImage = req.file ? req.file.filename : null;
     const fields = [];
     const values = [];
     if (name) {
@@ -281,6 +291,10 @@ app.put('/workers/:id', verifyToken, requireAdmin, async (req, res) => {
       }
       fields.push('salary = ?');
       values.push(salaryValue);
+    }
+    if (profileImage) {
+      fields.push('profile_image = ?');
+      values.push(profileImage);
     }
     if (!fields.length) {
       return res.status(400).json({ error: 'No updates provided' });
