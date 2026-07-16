@@ -1,0 +1,99 @@
+Society Management System Requirements
+User Roles
+1. Admin
+Login using hardcoded username and password stored in the database.
+Total 3 Admin accounts.
+Can perform Create, Read, Update, Delete (CRUD) operations on:
+Members
+Workers
+Worker Attendance
+Expenses
+Maintenance Records
+Can view Dashboard.
+2. Society Member
+Register and Login using the platform.
+Can only view:
+Dashboard
+Members List
+Workers List
+Worker Attendance
+Expenses
+Maintenance Records
+No Create, Update, or Delete permissions.
+3. Worker
+No login required.
+Managed only by Admin.
+Worker information is stored in the system and used for attendance management.
+Features
+Dashboard
+Total Members Count
+Total Workers Count
+Total Expenses Amount
+Total Maintenance Collection
+Recent Expenses
+Recent Attendance Records
+Member Management
+Add Member
+Update Member
+Delete Member
+View Member Details
+Worker Management
+Add Worker
+Update Worker
+Delete Worker
+View Worker Details
+Worker Attendance Management
+Mark Daily Attendance
+Attendance Status:
+Present
+Absent
+View Attendance History
+Update Attendance
+Delete Attendance Record
+Expense Management
+Predefined Expense Categories:
+Motor Repairing
+Garden Maintenance
+Road Cleaning
+Security Salary
+Electric Repairing
+Water Supply
+Other
+Fields:
+Expense Category
+Expense Date
+Amount
+Description
+Upload Multiple Proof Images
+Add, Update, Delete, View Expenses
+Maintenance Management
+Generate Monthly Maintenance
+Add Maintenance Amount
+Track Member-wise Maintenance
+Payment Status:
+Paid
+Unpaid
+View Maintenance Records
+Role-Based Access Control
+Module	Admin	Member
+Dashboard	View	View
+Members	CRUD	View Only
+Workers	CRUD	View Only
+Attendance	CRUD	View Only
+Expenses	CRUD	View Only
+Maintenance	CRUD	View Only
+Technology Stack
+Frontend
+ReactJS
+React Router DOM
+Axios
+Material UI / Bootstrap
+Backend
+Node.js
+Express.js
+JWT Authentication
+bcrypt Password Hashing
+Database
+MySQL
+
+- Fullfil these requirement with the minimal code and without any error and easy to use. - Also provide the database schema and seedding.
