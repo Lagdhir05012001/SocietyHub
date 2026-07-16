@@ -9,6 +9,7 @@ CREATE TABLE IF NOT EXISTS users (
   flat_no VARCHAR(30) NOT NULL,
   password VARCHAR(255) NOT NULL,
   role ENUM('admin', 'member') NOT NULL DEFAULT 'member',
+  profile_image VARCHAR(255),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -18,6 +19,7 @@ CREATE TABLE IF NOT EXISTS workers (
   phone VARCHAR(30),
   type VARCHAR(80) NOT NULL,
   salary DECIMAL(10,2) DEFAULT 0,
+  profile_image VARCHAR(255),
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 

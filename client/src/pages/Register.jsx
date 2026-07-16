@@ -8,6 +8,7 @@ export default function Register({ onRegister }) {
   const [password, setPassword] = useState('');
   const [phone, setPhone] = useState('');
   const [flatNo, setFlatNo] = useState('');
+  const [profile, setProfile] = useState(null);
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
@@ -15,7 +16,16 @@ export default function Register({ onRegister }) {
     event.preventDefault();
     setError('');
     try {
-      const response = await api.post('/auth/register', { name, email, password, phone, flat_no: flatNo });
+      const formData = new FormData();
+      formData.append('name', name);
+      formData.append('email', email);
+      formData.append('password', password);
+      formData.append('phone', phone);
+      formData.append('flat_no', flatNo);
+      if (profile) {
+        formData.append('profile', profile);
+      }
+      const response = await api.post('/auth/register', formData);
       onRegister(response.data.user, response.data.token);
       navigate('/dashboard');
     } catch (err) {
@@ -50,6 +60,10 @@ export default function Register({ onRegister }) {
               <div className="mb-3">
                 <label className="form-label">Flat Number</label>
                 <input className="form-control" value={flatNo} onChange={(e) => setFlatNo(e.target.value)} required />
+              </div>
+              <div className="mb-3">
+                <label className="form-label">Profile Image</label>
+                <input className="form-control" type="file" accept="image/png, image/jpeg" onChange={(e) => setProfile(e.target.files[0] || null)} />
               </div>
               <button className="btn btn-primary w-100" type="submit">Register</button>
             </form>
