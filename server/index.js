@@ -29,6 +29,17 @@ async function query(sql, params = []) {
   return rows;
 }
 
+async function logActivity(userId, userName, action, details = '') {
+  try {
+    await query(
+      'INSERT INTO activity_logs (user_id, user_name, action, details) VALUES (?, ?, ?, ?)',
+      [userId || null, userName || null, action, details || '']
+    );
+  } catch (error) {
+    console.error('Activity log failed', error);
+  }
+}
+
 function parsePositiveNumber(value) {
   const parsed = parseFloat(value);
   if (Number.isNaN(parsed) || parsed < 0) {
@@ -58,6 +69,7 @@ app.post('/auth/register', upload.single('profile'), async (req, res) => {
 
     const user = { id: result.insertId, role: 'member', name, email, profile_image: profileImage };
     const token = jwt.sign({ id: user.id, role: user.role, name: user.name }, secret, { expiresIn: '8h' });
+    await logActivity(user.id, user.name, 'Register', `Member registered with email ${email}`);
     res.json({ token, user });
   } catch (error) {
     console.error(error);
@@ -83,6 +95,7 @@ app.post('/auth/login', async (req, res) => {
     }
 
     const token = jwt.sign({ id: user.id, role: user.role, name: user.name }, secret, { expiresIn: '8h' });
+    await logActivity(user.id, user.name, 'Login', `User logged in with email ${user.email}`);
     res.json({ token, user: { id: user.id, name: user.name, email: user.email, role: user.role, profile_image: user.profile_image } });
   } catch (error) {
     console.error(error);
@@ -161,6 +174,7 @@ app.post('/members', verifyToken, requireAdmin, upload.single('profile'), async 
       'member',
       profileImage,
     ]);
+    await logActivity(req.user.id, req.user.name, 'Create member', `Created member ${name} (${email})`);
     res.status(201).json({ message: 'Member created' });
   } catch (error) {
     console.error(error);
@@ -207,6 +221,7 @@ app.put('/members/:id', verifyToken, requireAdmin, upload.single('profile'), asy
       `UPDATE users SET ${fields.join(', ')} WHERE id = ? AND role = ?`,
       values
     );
+    await logActivity(req.user.id, req.user.name, 'Update member', `Updated member id ${req.params.id}`);
     res.json({ message: 'Member updated' });
   } catch (error) {
     console.error(error);
@@ -217,6 +232,7 @@ app.put('/members/:id', verifyToken, requireAdmin, upload.single('profile'), asy
 app.delete('/members/:id', verifyToken, requireAdmin, async (req, res) => {
   try {
     await query('DELETE FROM users WHERE id = ? AND role = ?', [req.params.id, 'member']);
+    await logActivity(req.user.id, req.user.name, 'Delete member', `Deleted member id ${req.params.id}`);
     res.json({ message: 'Member deleted' });
   } catch (error) {
     console.error(error);
@@ -259,6 +275,7 @@ app.post('/workers', verifyToken, requireAdmin, upload.single('profile'), async 
       return res.status(400).json({ error: 'Salary must be a non-negative number' });
     }
     await query('INSERT INTO workers (name, phone, type, salary, profile_image) VALUES (?, ?, ?, ?, ?)', [name, phone || '', type, salaryValue, profileImage]);
+    await logActivity(req.user.id, req.user.name, 'Create worker', `Created worker ${name} (${type})`);
     res.status(201).json({ message: 'Worker created' });
   } catch (error) {
     console.error(error);
@@ -301,6 +318,7 @@ app.put('/workers/:id', verifyToken, requireAdmin, upload.single('profile'), asy
     }
     values.push(req.params.id);
     await query(`UPDATE workers SET ${fields.join(', ')} WHERE id = ?`, values);
+    await logActivity(req.user.id, req.user.name, 'Update worker', `Updated worker id ${req.params.id}`);
     res.json({ message: 'Worker updated' });
   } catch (error) {
     console.error(error);
@@ -311,6 +329,7 @@ app.put('/workers/:id', verifyToken, requireAdmin, upload.single('profile'), asy
 app.delete('/workers/:id', verifyToken, requireAdmin, async (req, res) => {
   try {
     await query('DELETE FROM workers WHERE id = ?', [req.params.id]);
+    await logActivity(req.user.id, req.user.name, 'Delete worker', `Deleted worker id ${req.params.id}`);
     res.json({ message: 'Worker deleted' });
   } catch (error) {
     console.error(error);
@@ -337,6 +356,7 @@ app.post('/attendance', verifyToken, requireAdmin, async (req, res) => {
       return res.status(400).json({ error: 'Worker, date and status are required' });
     }
     await query('INSERT INTO attendance (worker_id, date, status) VALUES (?, ?, ?)', [worker_id, date, status]);
+    await logActivity(req.user.id, req.user.name, 'Create attendance', `Recorded attendance for worker ${worker_id} on ${date} as ${status}`);
     res.status(201).json({ message: 'Attendance recorded' });
   } catch (error) {
     console.error(error);
@@ -366,6 +386,7 @@ app.put('/attendance/:id', verifyToken, requireAdmin, async (req, res) => {
     }
     values.push(req.params.id);
     await query(`UPDATE attendance SET ${fields.join(', ')} WHERE id = ?`, values);
+    await logActivity(req.user.id, req.user.name, 'Update attendance', `Updated attendance id ${req.params.id}`);
     res.json({ message: 'Attendance updated' });
   } catch (error) {
     console.error(error);
@@ -376,6 +397,7 @@ app.put('/attendance/:id', verifyToken, requireAdmin, async (req, res) => {
 app.delete('/attendance/:id', verifyToken, requireAdmin, async (req, res) => {
   try {
     await query('DELETE FROM attendance WHERE id = ?', [req.params.id]);
+    await logActivity(req.user.id, req.user.name, 'Delete attendance', `Deleted attendance id ${req.params.id}`);
     res.json({ message: 'Attendance deleted' });
   } catch (error) {
     console.error(error);
@@ -418,6 +440,7 @@ app.post('/expenses', verifyToken, requireAdmin, upload.array('proofs', 5), asyn
           [expenseId, file.filename]);
       }
     }
+    await logActivity(req.user.id, req.user.name, 'Create expense', `Created expense ${category} on ${expense_date} amount ${amountValue}`);
     res.status(201).json({ message: 'Expense recorded' });
   } catch (error) {
     console.error(error);
@@ -455,6 +478,7 @@ app.put('/expenses/:id', verifyToken, requireAdmin, async (req, res) => {
     }
     values.push(req.params.id);
     await query(`UPDATE expenses SET ${fields.join(', ')} WHERE id = ?`, values);
+    await logActivity(req.user.id, req.user.name, 'Update expense', `Updated expense id ${req.params.id}`);
     res.json({ message: 'Expense updated' });
   } catch (error) {
     console.error(error);
@@ -466,6 +490,7 @@ app.delete('/expenses/:id', verifyToken, requireAdmin, async (req, res) => {
   try {
     await query('DELETE FROM expense_proofs WHERE expense_id = ?', [req.params.id]);
     await query('DELETE FROM expenses WHERE id = ?', [req.params.id]);
+    await logActivity(req.user.id, req.user.name, 'Delete expense', `Deleted expense id ${req.params.id}`);
     res.json({ message: 'Expense deleted' });
   } catch (error) {
     console.error(error);
@@ -485,6 +510,16 @@ app.get('/maintenance', verifyToken, async (req, res) => {
   }
 });
 
+app.get('/activity-log', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    const logs = await query('SELECT id, user_id, user_name, action, details, created_at FROM activity_logs ORDER BY created_at DESC');
+    res.json(logs);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Unable to load activity log' });
+  }
+});
+
 app.post('/maintenance', verifyToken, requireAdmin, async (req, res) => {
   try {
     const { member_id, month_year, amount, status } = req.body;
@@ -496,6 +531,7 @@ app.post('/maintenance', verifyToken, requireAdmin, async (req, res) => {
       'INSERT INTO maintenance (member_id, month_year, amount, status, paid_date) VALUES (?, ?, ?, ?, ?)',
       [member_id, month_year, amountValue, status || 'Unpaid', status === 'Paid' ? new Date() : null]
     );
+    await logActivity(req.user.id, req.user.name, 'Create maintenance', `Created maintenance record for member ${member_id} for ${month_year}`);
     res.status(201).json({ message: 'Maintenance record created' });
   } catch (error) {
     console.error(error);
@@ -535,6 +571,7 @@ app.put('/maintenance/:id', verifyToken, requireAdmin, async (req, res) => {
     }
     values.push(req.params.id);
     await query(`UPDATE maintenance SET ${fields.join(', ')} WHERE id = ?`, values);
+    await logActivity(req.user.id, req.user.name, 'Update maintenance', `Updated maintenance id ${req.params.id}`);
     res.json({ message: 'Maintenance updated' });
   } catch (error) {
     console.error(error);
@@ -564,6 +601,7 @@ app.post('/maintenance/generate', verifyToken, requireAdmin, async (req, res) =>
       await query(`INSERT INTO maintenance (member_id, month_year, amount, status, paid_date) VALUES (?, ?, ?, ?, ?)`,
         [member.id, month_year, amountValue, 'Unpaid', null]);
     }
+    await logActivity(req.user.id, req.user.name, 'Generate maintenance', `Generated monthly maintenance ${month_year} for ${members.length} members`);
     res.status(201).json({ message: 'Monthly maintenance generated' });
   } catch (error) {
     console.error(error);

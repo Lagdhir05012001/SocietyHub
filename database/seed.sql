@@ -26,3 +26,7 @@ INSERT INTO expense_proofs (expense_id, filename) VALUES
 
 INSERT INTO maintenance (member_id, month_year, amount, status, paid_date) VALUES
   (4, '2026-07', 2500.00, 'Paid', '2026-07-05 10:00:00');
+
+INSERT INTO activity_logs (user_id, user_name, action, details) VALUES
+  (1, 'Admin One', 'Login', 'Admin One logged in'),
+  (1, 'Admin One', 'Create member', 'Created Member One with email member1@societyhub.com');
