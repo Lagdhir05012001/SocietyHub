@@ -351,7 +351,11 @@ export default function Maintenance({ user }) {
                       <td>{record.member_name}</td>
                       <td>{record.flat_no}</td>
                       <td>{record.amount}</td>
-                      <td>{record.status}</td>
+                      <td>
+                        <span className={record.status === 'Paid' ? 'text-success fw-semibold' : 'text-danger fw-semibold'}>
+                          {record.status}
+                        </span>
+                      </td>
                       <td>{record.paid_date ? formatDateTime(record.paid_date) : '-'}</td>
                       {user.role === 'admin' && (
                         <td>

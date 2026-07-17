@@ -265,7 +265,11 @@ export default function Attendance({ user }) {
                       <td>{formatDate(record.date)}</td>
                       <td>{record.worker_name}</td>
                       <td>{record.worker_type}</td>
-                      <td>{record.status}</td>
+                      <td>
+                        <span className={record.status === 'Present' ? 'text-success fw-semibold' : 'text-danger fw-semibold'}>
+                          {record.status}
+                        </span>
+                      </td>
                       {user.role === 'admin' && (
                         <td>
                           <button className="btn btn-sm btn-outline-secondary me-2" onClick={() => startEdit(record)}>Edit</button>
