@@ -321,7 +321,7 @@ export default function Maintenance({ user }) {
               <label className="form-label">Month</label>
               <select className="form-select" value={monthFilter} onChange={(e) => { setMonthFilter(e.target.value); setCurrentPage(1); }}>
                 <option value="">All months</option>
-                {months.slice(1).map((month) => (
+                {months.map((month) => (
                   <option key={month.value} value={month.value}>{month.label}</option>
                 ))}
               </select>

@@ -10,6 +10,7 @@ export default function Members({ user }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [form, setForm] = useState({ name: '', email: '', phone: '', flat_no: '', password: '' });
+  const [showPassword, setShowPassword] = useState(false);
   const [profileFile, setProfileFile] = useState(null);
   const [profileKey, setProfileKey] = useState(Date.now());
   const [editId, setEditId] = useState(null);
@@ -167,7 +168,12 @@ export default function Members({ user }) {
                 </div>
                 <div className="col-md-6">
                   <label className="form-label">Password</label>
-                  <input className="form-control" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder={editId ? 'Leave blank to keep current password' : ''} />
+                  <div className="input-group">
+                    <input className="form-control" type={showPassword ? 'text' : 'password'} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder={editId ? 'Leave blank to keep current password' : ''} />
+                    <button type="button" className="btn btn-outline-secondary" onClick={() => setShowPassword((prev) => !prev)}>
+                      {showPassword ? 'Hide' : 'Show'}
+                    </button>
+                  </div>
                 </div>
                 <div className="col-md-6">
                   <label className="form-label">Profile Image</label>

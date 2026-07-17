@@ -6,6 +6,7 @@ export default function Register({ onRegister }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [phone, setPhone] = useState('');
   const [flatNo, setFlatNo] = useState('');
   const [profile, setProfile] = useState(null);
@@ -51,7 +52,12 @@ export default function Register({ onRegister }) {
               </div>
               <div className="mb-3">
                 <label className="form-label">Password</label>
-                <input className="form-control" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                <div className="input-group">
+                  <input className="form-control" type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} required />
+                  <button type="button" className="btn btn-outline-secondary" onClick={() => setShowPassword((prev) => !prev)}>
+                    {showPassword ? 'Hide' : 'Show'}
+                  </button>
+                </div>
               </div>
               <div className="mb-3">
                 <label className="form-label">Phone</label>

@@ -5,6 +5,7 @@ import api from '../api';
 export default function Login({ onLogin }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
@@ -34,7 +35,12 @@ export default function Login({ onLogin }) {
               </div>
               <div className="mb-3">
                 <label className="form-label">Password</label>
-                <input className="form-control" type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+                <div className="input-group">
+                  <input className="form-control" type={showPassword ? 'text' : 'password'} value={password} onChange={(e) => setPassword(e.target.value)} required />
+                  <button type="button" className="btn btn-outline-secondary" onClick={() => setShowPassword((prev) => !prev)}>
+                    {showPassword ? 'Hide' : 'Show'}
+                  </button>
+                </div>
               </div>
               <button className="btn btn-primary w-100" type="submit">Log in</button>
             </form>
