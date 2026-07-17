@@ -107,8 +107,8 @@ app.get('/dashboard', verifyToken, async (req, res) => {
   try {
     const totalMembers = await query("SELECT COUNT(*) AS count FROM users WHERE role='member'");
     const totalWorkers = await query('SELECT COUNT(*) AS count FROM workers');
-    const totalExpenses = await query('SELECT IFNULL(SUM(amount), 0) AS total FROM expenses');
-    const totalMaintenance = await query("SELECT IFNULL(SUM(amount), 0) AS total FROM maintenance WHERE status='Paid'");
+    const totalExpenses = await query('SELECT IFNULL(SUM(amount), 0) AS total FROM expenses WHERE YEAR(expense_date) = YEAR(CURDATE())');
+    const totalMaintenance = await query("SELECT IFNULL(SUM(amount), 0) AS total FROM maintenance WHERE status='Paid' AND LEFT(month_year, 4) = YEAR(CURDATE())");
     const recentExpenses = await query(
       'SELECT e.id, e.category, e.expense_date, e.amount, e.description FROM expenses e ORDER BY e.expense_date DESC LIMIT 5'
     );

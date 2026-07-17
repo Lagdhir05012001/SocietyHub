@@ -47,13 +47,13 @@ export default function Dashboard() {
         </div>
         <div className="col-12 col-sm-6 col-lg-3">
           <div className="card text-bg-warning p-3">
-            <div>Total Expenses</div>
+            <div>Total Expenses (This Year)</div>
             <h3>{stats.totalExpenses}</h3>
           </div>
         </div>
         <div className="col-12 col-sm-6 col-lg-3">
           <div className="card text-bg-info p-3">
-            <div>Maintenance Collected</div>
+            <div>Total Maintenance Collected (This Year)</div>
             <h3>{stats.totalMaintenance}</h3>
           </div>
         </div>
