@@ -135,16 +135,16 @@ export default function Expenses({ user }) {
 
   return (
     <div>
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h2>Expenses</h2>
-        <div>
-          <button className="btn btn-outline-secondary me-2" onClick={exportCsv}>Export CSV</button>
+    <div className="page-header">
+      <h2 className="page-title">Expenses</h2>
+      <div className="page-actions">
+        <button className="btn btn-outline-secondary" onClick={exportCsv}>Export CSV</button>
           <button className="btn btn-outline-secondary" onClick={exportPdf}>Export PDF</button>
         </div>
       </div>
-      <div className="mb-3">
-        <span className="badge bg-primary me-2">Total expenses: {summary.total}</span>
-        <span className="badge bg-secondary me-2">Filtered: {summary.filtered}</span>
+    <div className="summary-badges">
+      <span className="badge bg-primary">Total expenses: {summary.total}</span>
+      <span className="badge bg-secondary">Filtered: {summary.filtered}</span>
         <span className="badge bg-success">Amount: ₹{summary.amount.toFixed(2)}</span>
       </div>
       {error && <div className="alert alert-danger">{error}</div>}
@@ -197,7 +197,7 @@ export default function Expenses({ user }) {
       <div className="card mb-3 shadow-sm">
         <div className="card-body">
           <div className="row g-3 align-items-end">
-            <div className="col-md-3">
+            <div className="col-12 col-md-3">
               <label className="form-label">Category</label>
               <select className="form-select" value={categoryFilter} onChange={(e) => { setCategoryFilter(e.target.value); setCurrentPage(1); }}>
                 <option value="">All categories</option>
@@ -206,7 +206,7 @@ export default function Expenses({ user }) {
                 ))}
               </select>
             </div>
-            <div className="col-md-2">
+            <div className="col-12 col-sm-6 col-md-2">
               <label className="form-label">Month</label>
               <select className="form-select" value={monthFilter} onChange={(e) => { setMonthFilter(e.target.value); setCurrentPage(1); }}>
                 <option value="">All months</option>
@@ -224,12 +224,10 @@ export default function Expenses({ user }) {
                 <option value="12">December</option>
               </select>
             </div>
-            <div className="col-md-2">
+            <div className="col-12 col-sm-6 col-md-2">
               <label className="form-label">Year</label>
               <select className="form-select" value={yearFilter} onChange={(e) => { setYearFilter(e.target.value); setCurrentPage(1); }}>
                 <option value="">All years</option>
-                <option value="2024">2024</option>
-                <option value="2025">2025</option>
                 <option value="2026">2026</option>
                 <option value="2027">2027</option>
                 <option value="2028">2028</option>
@@ -245,37 +243,39 @@ export default function Expenses({ user }) {
           {loading ? (
             <div className="p-3">Loading expenses...</div>
           ) : (
-            <table className="table mb-0">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Category</th>
-                  <th>Amount</th>
-                  <th>Description</th>
-                  <th>Proofs</th>
-                  {user.role === 'admin' && <th>Actions</th>}
-                </tr>
-              </thead>
-              <tbody>
-                {displayedExpenses.map((expense) => (
-                  <tr key={expense.id}>
-                    <td>{formatDate(expense.expense_date)}</td>
-                    <td>{expense.category}</td>
-                    <td>{expense.amount}</td>
-                    <td>{expense.description}</td>
-                    <td>{expense.proofs?.map((proof, index) => (
-                      <div key={index}><a href={`${api.defaults.baseURL}/uploads/${proof}`} target="_blank" rel="noreferrer">View</a></div>
-                    ))}</td>
-                    {user.role === 'admin' && (
-                      <td>
-                        <button className="btn btn-sm btn-outline-secondary me-2" onClick={() => startEdit(expense)}>Edit</button>
-                        <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(expense.id)}>Delete</button>
-                      </td>
-                    )}
+            <div className="table-responsive">
+              <table className="table mb-0">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Category</th>
+                    <th>Amount</th>
+                    <th>Description</th>
+                    <th>Proofs</th>
+                    {user.role === 'admin' && <th>Actions</th>}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {displayedExpenses.map((expense) => (
+                    <tr key={expense.id}>
+                      <td>{formatDate(expense.expense_date)}</td>
+                      <td>{expense.category}</td>
+                      <td>{expense.amount}</td>
+                      <td>{expense.description}</td>
+                      <td>{expense.proofs?.map((proof, index) => (
+                        <div key={index}><a href={`${api.defaults.baseURL}/uploads/${proof}`} target="_blank" rel="noreferrer">View</a></div>
+                      ))}</td>
+                      {user.role === 'admin' && (
+                        <td>
+                          <button className="btn btn-sm btn-outline-secondary me-2" onClick={() => startEdit(expense)}>Edit</button>
+                          <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(expense.id)}>Delete</button>
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       </div>

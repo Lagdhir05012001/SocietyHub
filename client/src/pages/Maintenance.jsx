@@ -148,18 +148,18 @@ export default function Maintenance({ user }) {
 
   return (
     <div>
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h2>Maintenance Records</h2>
-        <div>
-          <button className="btn btn-outline-secondary me-2" onClick={exportCsv}>Export CSV</button>
+    <div className="page-header">
+      <h2 className="page-title">Maintenance Records</h2>
+      <div className="page-actions">
+        <button className="btn btn-outline-secondary" onClick={exportCsv}>Export CSV</button>
           <button className="btn btn-outline-secondary" onClick={exportPdf}>Export PDF</button>
         </div>
       </div>
-      <div className="mb-3">
-        <span className="badge bg-primary me-2">Total records: {summary.total}</span>
-        <span className="badge bg-secondary me-2">Filtered: {summary.filtered}</span>
-        <span className="badge bg-success me-2">Total amount: ₹{summary.amount.toFixed(2)}</span>
-        <span className="badge bg-info text-dark me-2">Paid amount: ₹{summary.paidAmount.toFixed(2)}</span>
+    <div className="summary-badges">
+      <span className="badge bg-primary">Total records: {summary.total}</span>
+      <span className="badge bg-secondary">Filtered: {summary.filtered}</span>
+      <span className="badge bg-success">Total amount: ₹{summary.amount.toFixed(2)}</span>
+      <span className="badge bg-info text-dark">Paid amount: ₹{summary.paidAmount.toFixed(2)}</span>
         <span className="badge bg-warning text-dark">Unpaid amount: ₹{summary.unpaidAmount.toFixed(2)}</span>
       </div>
       {error && <div className="alert alert-danger">{error}</div>}
@@ -170,7 +170,7 @@ export default function Maintenance({ user }) {
             <div className="card-body">
               <form onSubmit={handleSubmit}>
                 <div className="row g-3">
-                  <div className="col-md-4">
+                  <div className="col-12 col-md-4">
                     <label className="form-label">Member</label>
                     <select className="form-select" value={form.member_id} onChange={(e) => setForm({ ...form, member_id: e.target.value })} required>
                       <option value="">Select member</option>
@@ -179,31 +179,31 @@ export default function Maintenance({ user }) {
                       ))}
                     </select>
                   </div>
-                    <div className="col-md-2">
+                  <div className="col-12 col-sm-6 col-md-2">
                     <label className="form-label">Month</label>
-                      <select className="form-select" value={form.month} onChange={(e) => setForm({ ...form, month: e.target.value })} required>
-                        <option value="">Month</option>
-                        {months.map((month) => (
-                          <option key={month.value} value={month.value}>{month.label}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="col-md-2">
-                      <label className="form-label">Year</label>
-                      <select className="form-select" value={form.year} onChange={(e) => setForm({ ...form, year: e.target.value })} required>
-                        <option value="">Year</option>
-                        {years.map((year) => (
-                          <option key={year} value={year}>{year}</option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="col-md-4">
-                      <label className="form-label">Amount</label>
-                      <input className="form-control" type="number" min="0" step="0.01" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} required />
-                    </div>
+                    <select className="form-select" value={form.month} onChange={(e) => setForm({ ...form, month: e.target.value })} required>
+                      <option value="">Month</option>
+                      {months.map((month) => (
+                        <option key={month.value} value={month.value}>{month.label}</option>
+                      ))}
+                    </select>
                   </div>
+                  <div className="col-12 col-sm-6 col-md-2">
+                    <label className="form-label">Year</label>
+                    <select className="form-select" value={form.year} onChange={(e) => setForm({ ...form, year: e.target.value })} required>
+                      <option value="">Year</option>
+                      {years.map((year) => (
+                        <option key={year} value={year}>{year}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="col-12 col-md-4">
+                    <label className="form-label">Amount</label>
+                    <input className="form-control" type="number" min="0" step="0.01" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} required />
+                  </div>
+                </div>
                 <div className="row g-3 mt-3">
-                  <div className="col-md-4">
+                  <div className="col-12 col-md-4">
                     <label className="form-label">Status</label>
                     <select className="form-select" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} required>
                       <option value="">Select status</option>
@@ -225,7 +225,7 @@ export default function Maintenance({ user }) {
             <div className="card-header">Generate Monthly Maintenance</div>
             <div className="card-body">
               <form onSubmit={handleGenerate} className="row g-3 align-items-end">
-                <div className="col-md-3">
+                <div className="col-12 col-md-3">
                   <label className="form-label">Month</label>
                   <select className="form-select" value={generate.month} onChange={(e) => setGenerate({ ...generate, month: e.target.value })} required>
                     <option value="">Month</option>
@@ -234,7 +234,7 @@ export default function Maintenance({ user }) {
                     ))}
                   </select>
                 </div>
-                <div className="col-md-2">
+                <div className="col-12 col-sm-6 col-md-2">
                   <label className="form-label">Year</label>
                   <select className="form-select" value={generate.year} onChange={(e) => setGenerate({ ...generate, year: e.target.value })} required>
                     <option value="">Year</option>
@@ -243,11 +243,11 @@ export default function Maintenance({ user }) {
                     ))}
                   </select>
                 </div>
-                <div className="col-md-4">
+                <div className="col-12 col-md-4">
                   <label className="form-label">Amount</label>
                   <input className="form-control" type="number" min="0" step="0.01" value={generate.amount} onChange={(e) => setGenerate({ ...generate, amount: e.target.value })} required />
                 </div>
-                <div className="col-md-2">
+                <div className="col-12 col-sm-6 col-md-2">
                   <button className="btn btn-secondary w-100" type="submit">Generate</button>
                 </div>
               </form>
@@ -258,7 +258,7 @@ export default function Maintenance({ user }) {
       <div className="card mb-3 shadow-sm">
         <div className="card-body">
           <div className="row g-3 align-items-end">
-            <div className="col-md-3">
+            <div className="col-12 col-md-3">
               <label className="form-label">Search Member</label>
               <input
                 className="form-control"
@@ -268,7 +268,7 @@ export default function Maintenance({ user }) {
                 placeholder="Search by member name"
               />
             </div>
-            <div className="col-md-2">
+            <div className="col-12 col-sm-6 col-md-2">
               <label className="form-label">Status</label>
               <select className="form-select" value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}>
                 <option value="">All statuses</option>
@@ -276,7 +276,7 @@ export default function Maintenance({ user }) {
                 <option value="Unpaid">Unpaid</option>
               </select>
             </div>
-            <div className="col-md-2">
+            <div className="col-12 col-sm-6 col-md-2">
               <label className="form-label">Month</label>
               <select className="form-select" value={monthFilter} onChange={(e) => { setMonthFilter(e.target.value); setCurrentPage(1); }}>
                 <option value="">All months</option>
@@ -285,7 +285,7 @@ export default function Maintenance({ user }) {
                 ))}
               </select>
             </div>
-            <div className="col-md-2">
+            <div className="col-12 col-sm-6 col-md-2">
               <label className="form-label">Year</label>
               <select className="form-select" value={yearFilter} onChange={(e) => { setYearFilter(e.target.value); setCurrentPage(1); }}>
                 {years.map((year) => (
@@ -301,37 +301,39 @@ export default function Maintenance({ user }) {
           {loading ? (
             <div className="p-3">Loading maintenance records...</div>
           ) : (
-            <table className="table mb-0">
-              <thead>
-                <tr>
-                  <th>Month</th>
-                  <th>Member</th>
-                  <th>Flat</th>
-                  <th>Amount</th>
-                  <th>Status</th>
-                  <th>Paid Date</th>
-                  {user.role === 'admin' && <th>Actions</th>}
-                </tr>
-              </thead>
-              <tbody>
-                {displayedRecords.map((record) => (
-                  <tr key={record.id}>
-                    <td>{record.month_year}</td>
-                    <td>{record.member_name}</td>
-                    <td>{record.flat_no}</td>
-                    <td>{record.amount}</td>
-                    <td>{record.status}</td>
-                    <td>{record.paid_date ? formatDateTime(record.paid_date) : '-'}</td>
-                    {user.role === 'admin' && (
-                      <td>
-                        <button className="btn btn-sm btn-outline-secondary me-2" onClick={() => startEdit(record)}>Edit</button>
-                        <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(record.id)}>Delete</button>
-                      </td>
-                    )}
+            <div className="table-responsive">
+              <table className="table mb-0">
+                <thead>
+                  <tr>
+                    <th>Month</th>
+                    <th>Member</th>
+                    <th>Flat</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Paid Date</th>
+                    {user.role === 'admin' && <th>Actions</th>}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {displayedRecords.map((record) => (
+                    <tr key={record.id}>
+                      <td>{record.month_year}</td>
+                      <td>{record.member_name}</td>
+                      <td>{record.flat_no}</td>
+                      <td>{record.amount}</td>
+                      <td>{record.status}</td>
+                      <td>{record.paid_date ? formatDateTime(record.paid_date) : '-'}</td>
+                      {user.role === 'admin' && (
+                        <td>
+                          <button className="btn btn-sm btn-outline-secondary me-2" onClick={() => startEdit(record)}>Edit</button>
+                          <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(record.id)}>Delete</button>
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       </div>

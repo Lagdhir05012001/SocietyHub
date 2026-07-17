@@ -35,8 +35,8 @@ export default function Register({ onRegister }) {
 
   return (
     <div className="row justify-content-center">
-      <div className="col-md-6">
-        <div className="card shadow-sm">
+      <div className="col-12 col-md-8 col-lg-7">
+        <div className="card shadow-sm auth-card">
           <div className="card-body">
             <h3 className="card-title mb-4">Register as Member</h3>
             {error && <div className="alert alert-danger">{error}</div>}

@@ -18,7 +18,7 @@ const months = [
   { value: '11', label: 'November' },
   { value: '12', label: 'December' },
 ];
-const years = ['', '2024', '2025', '2026', '2027', '2028', '2029', '2030'];
+const years = ['2026', '2027', '2028', '2029', '2030'];
 const PAGE_SIZE = 10;
 
 export default function Attendance({ user }) {
@@ -116,17 +116,17 @@ export default function Attendance({ user }) {
 
   return (
     <div>
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h2>Worker Attendance</h2>
-        <div>
-          <button className="btn btn-outline-secondary me-2" onClick={exportCsv}>Export CSV</button>
+    <div className="page-header">
+      <h2 className="page-title">Worker Attendance</h2>
+      <div className="page-actions">
+        <button className="btn btn-outline-secondary" onClick={exportCsv}>Export CSV</button>
           <button className="btn btn-outline-secondary" onClick={exportPdf}>Export PDF</button>
         </div>
       </div>
-      <div className="mb-3">
-        <span className="badge bg-primary me-2">Total records: {summary.total}</span>
-        <span className="badge bg-secondary me-2">Filtered: {summary.filtered}</span>
-        <span className="badge bg-success me-2">Present: {summary.present}</span>
+    <div className="summary-badges">
+      <span className="badge bg-primary">Total records: {summary.total}</span>
+      <span className="badge bg-secondary">Filtered: {summary.filtered}</span>
+      <span className="badge bg-success">Present: {summary.present}</span>
         <span className="badge bg-danger">Absent: {summary.absent}</span>
       </div>
       {error && <div className="alert alert-danger">{error}</div>}
@@ -169,7 +169,7 @@ export default function Attendance({ user }) {
       <div className="card mb-3 shadow-sm">
         <div className="card-body">
           <div className="row g-3 align-items-end">
-            <div className="col-md-3">
+            <div className="col-12 col-md-3">
               <label className="form-label">Search</label>
               <input
                 className="form-control"
@@ -179,7 +179,7 @@ export default function Attendance({ user }) {
                 placeholder="Worker name or type"
               />
             </div>
-            <div className="col-md-2">
+            <div className="col-12 col-sm-6 col-md-2">
               <label className="form-label">Status</label>
               <select className="form-select" value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}>
                 <option value="">All statuses</option>
@@ -187,7 +187,7 @@ export default function Attendance({ user }) {
                 <option value="Absent">Absent</option>
               </select>
             </div>
-            <div className="col-md-2">
+            <div className="col-12 col-sm-6 col-md-2">
               <label className="form-label">Month</label>
               <select className="form-select" value={monthFilter} onChange={(e) => { setMonthFilter(e.target.value); setCurrentPage(1); }}>
                 {months.map((month) => (
@@ -195,7 +195,7 @@ export default function Attendance({ user }) {
                 ))}
               </select>
             </div>
-            <div className="col-md-2">
+            <div className="col-12 col-sm-6 col-md-2">
               <label className="form-label">Year</label>
               <select className="form-select" value={yearFilter} onChange={(e) => { setYearFilter(e.target.value); setCurrentPage(1); }}>
                 {years.map((year) => (
@@ -211,33 +211,35 @@ export default function Attendance({ user }) {
           {loading ? (
             <div className="p-3">Loading attendance records...</div>
           ) : (
-            <table className="table mb-0">
-              <thead>
-                <tr>
-                  <th>Date</th>
-                  <th>Worker</th>
-                  <th>Type</th>
-                  <th>Status</th>
-                  {user.role === 'admin' && <th>Actions</th>}
-                </tr>
-              </thead>
-              <tbody>
-                {displayedAttendance.map((record) => (
-                  <tr key={record.id}>
-                    <td>{formatDate(record.date)}</td>
-                    <td>{record.worker_name}</td>
-                    <td>{record.worker_type}</td>
-                    <td>{record.status}</td>
-                    {user.role === 'admin' && (
-                      <td>
-                        <button className="btn btn-sm btn-outline-secondary me-2" onClick={() => startEdit(record)}>Edit</button>
-                        <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(record.id)}>Delete</button>
-                      </td>
-                    )}
+            <div className="table-responsive">
+              <table className="table mb-0">
+                <thead>
+                  <tr>
+                    <th>Date</th>
+                    <th>Worker</th>
+                    <th>Type</th>
+                    <th>Status</th>
+                    {user.role === 'admin' && <th>Actions</th>}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {displayedAttendance.map((record) => (
+                    <tr key={record.id}>
+                      <td>{formatDate(record.date)}</td>
+                      <td>{record.worker_name}</td>
+                      <td>{record.worker_type}</td>
+                      <td>{record.status}</td>
+                      {user.role === 'admin' && (
+                        <td>
+                          <button className="btn btn-sm btn-outline-secondary me-2" onClick={() => startEdit(record)}>Edit</button>
+                          <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(record.id)}>Delete</button>
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       </div>

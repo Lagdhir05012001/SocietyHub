@@ -104,15 +104,15 @@ export default function Members({ user }) {
 
   return (
     <div>
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h2>Members</h2>
-        <div>
-          <button className="btn btn-outline-secondary me-2" onClick={exportCsv}>Export CSV</button>
+    <div className="page-header">
+      <h2 className="page-title">Members</h2>
+      <div className="page-actions">
+        <button className="btn btn-outline-secondary" onClick={exportCsv}>Export CSV</button>
           <button className="btn btn-outline-secondary" onClick={exportPdf}>Export PDF</button>
         </div>
       </div>
-      <div className="mb-3">
-        <span className="badge bg-primary me-2">Total members: {summary.total}</span>
+    <div className="summary-badges">
+      <span className="badge bg-primary">Total members: {summary.total}</span>
         <span className="badge bg-secondary">Showing: {summary.filtered}</span>
       </div>
       {error && <div className="alert alert-danger">{error}</div>}
@@ -165,7 +165,7 @@ export default function Members({ user }) {
       <div className="card mb-3 shadow-sm">
         <div className="card-body">
           <div className="row g-3 align-items-end">
-            <div className="col-md-4">
+            <div className="col-12 col-md-4">
               <label className="form-label">Search Members</label>
               <input
                 className="form-control"
@@ -183,48 +183,50 @@ export default function Members({ user }) {
           {loading ? (
             <div className="p-3">Loading members...</div>
           ) : (
-            <table className="table mb-0">
-              <thead>
-                <tr>
-                  <th>Profile</th>
-                  <th>Name</th>
-                  <th>Email</th>
-                  <th>Phone</th>
-                  <th>Flat</th>
-                  {user.role === 'admin' && <th>Actions</th>}
-                </tr>
-              </thead>
-              <tbody>
-                {displayedMembers.map((member) => (
-                  <tr key={member.id}>
-                    <td>
-                      {member.profile_image ? (
-                        <img
-                          src={`${baseUrl}/uploads/${member.profile_image}`}
-                          alt={member.name}
-                          className="rounded-circle"
-                          style={{ width: 36, height: 36, objectFit: 'cover' }}
-                        />
-                      ) : (
-                        <div className="bg-secondary text-white rounded-circle d-inline-flex justify-content-center align-items-center" style={{ width: 36, height: 36 }}>
-                          {member.name?.charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                    </td>
-                    <td>{member.name}</td>
-                    <td>{member.email}</td>
-                    <td>{member.phone}</td>
-                    <td>{member.flat_no}</td>
-                    {user.role === 'admin' && (
-                      <td>
-                        <button className="btn btn-sm btn-outline-secondary me-2" onClick={() => startEdit(member)}>Edit</button>
-                        <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(member.id)}>Delete</button>
-                      </td>
-                    )}
+            <div className="table-responsive">
+              <table className="table mb-0">
+                <thead>
+                  <tr>
+                    <th>Profile</th>
+                    <th>Name</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Flat</th>
+                    {user.role === 'admin' && <th>Actions</th>}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {displayedMembers.map((member) => (
+                    <tr key={member.id}>
+                      <td>
+                        {member.profile_image ? (
+                          <img
+                            src={`${baseUrl}/uploads/${member.profile_image}`}
+                            alt={member.name}
+                            className="rounded-circle"
+                            style={{ width: 36, height: 36, objectFit: 'cover' }}
+                          />
+                        ) : (
+                          <div className="bg-secondary text-white rounded-circle d-inline-flex justify-content-center align-items-center" style={{ width: 36, height: 36 }}>
+                            {member.name?.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                      </td>
+                      <td>{member.name}</td>
+                      <td>{member.email}</td>
+                      <td>{member.phone}</td>
+                      <td>{member.flat_no}</td>
+                      {user.role === 'admin' && (
+                        <td>
+                          <button className="btn btn-sm btn-outline-secondary me-2" onClick={() => startEdit(member)}>Edit</button>
+                          <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(member.id)}>Delete</button>
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       </div>
