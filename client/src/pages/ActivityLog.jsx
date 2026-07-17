@@ -51,10 +51,10 @@ export default function ActivityLog() {
 
   return (
     <div>
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h2>Activity Log</h2>
-        <div>
-          <button className="btn btn-outline-secondary me-2" onClick={exportCsv}>Export CSV</button>
+      <div className="page-header">
+        <h2 className="page-title">Activity Log</h2>
+        <div className="page-actions">
+          <button className="btn btn-outline-secondary" onClick={exportCsv}>Export CSV</button>
           <button className="btn btn-outline-secondary" onClick={exportPdf}>Export PDF</button>
         </div>
       </div>
@@ -69,7 +69,7 @@ export default function ActivityLog() {
       <div className="card mb-3 shadow-sm">
         <div className="card-body">
           <div className="row g-3 align-items-end">
-            <div className="col-md-4">
+            <div className="col-12 col-md-4">
               <label className="form-label">Search Activity</label>
               <input
                 className="form-control"
@@ -88,26 +88,28 @@ export default function ActivityLog() {
           {loading ? (
             <div className="p-3">Loading activity log...</div>
           ) : (
-            <table className="table mb-0">
-              <thead>
-                <tr>
-                  <th>Date / Time</th>
-                  <th>User</th>
-                  <th>Action</th>
-                  <th>Details</th>
-                </tr>
-              </thead>
-              <tbody>
-                {displayedLogs.map((log) => (
-                  <tr key={log.id}>
-                    <td>{formatDateTime(log.created_at)}</td>
-                    <td>{log.user_name || 'System'}</td>
-                    <td>{log.action}</td>
-                    <td>{log.details}</td>
+            <div className="table-responsive">
+              <table className="table mb-0">
+                <thead>
+                  <tr>
+                    <th>Date / Time</th>
+                    <th>User</th>
+                    <th>Action</th>
+                    <th>Details</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {displayedLogs.map((log) => (
+                    <tr key={log.id}>
+                      <td>{formatDateTime(log.created_at)}</td>
+                      <td>{log.user_name || 'System'}</td>
+                      <td>{log.action}</td>
+                      <td>{log.details}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       </div>

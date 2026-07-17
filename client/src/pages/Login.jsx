@@ -22,8 +22,8 @@ export default function Login({ onLogin }) {
 
   return (
     <div className="row justify-content-center">
-      <div className="col-md-5">
-        <div className="card shadow-sm">
+      <div className="col-12 col-sm-8 col-md-6 col-lg-5">
+        <div className="card shadow-sm auth-card">
           <div className="card-body">
             <h3 className="card-title mb-4">Login</h3>
             {error && <div className="alert alert-danger">{error}</div>}

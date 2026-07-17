@@ -101,15 +101,15 @@ export default function Workers({ user }) {
 
   return (
     <div>
-      <div className="d-flex justify-content-between align-items-center mb-3">
-        <h2>Workers</h2>
-        <div>
-          <button className="btn btn-outline-secondary me-2" onClick={exportCsv}>Export CSV</button>
+    <div className="page-header">
+      <h2 className="page-title">Workers</h2>
+      <div className="page-actions">
+        <button className="btn btn-outline-secondary" onClick={exportCsv}>Export CSV</button>
           <button className="btn btn-outline-secondary" onClick={exportPdf}>Export PDF</button>
         </div>
       </div>
-      <div className="mb-3">
-        <span className="badge bg-primary me-2">Total workers: {summary.total}</span>
+    <div className="summary-badges">
+      <span className="badge bg-primary">Total workers: {summary.total}</span>
         <span className="badge bg-secondary">Showing: {summary.filtered}</span>
       </div>
       {error && <div className="alert alert-danger">{error}</div>}
@@ -158,7 +158,7 @@ export default function Workers({ user }) {
       <div className="card mb-3 shadow-sm">
         <div className="card-body">
           <div className="row g-3 align-items-end">
-            <div className="col-md-4">
+            <div className="col-12 col-md-4">
               <label className="form-label">Search Workers</label>
               <input
                 className="form-control"
@@ -176,48 +176,50 @@ export default function Workers({ user }) {
           {loading ? (
             <div className="p-3">Loading workers...</div>
           ) : (
-            <table className="table mb-0">
-              <thead>
-                <tr>
-                  <th>Profile</th>
-                  <th>Name</th>
-                  <th>Type</th>
-                  <th>Phone</th>
-                  <th>Salary</th>
-                  {user.role === 'admin' && <th>Actions</th>}
-                </tr>
-              </thead>
-              <tbody>
-                {displayedWorkers.map((worker) => (
-                  <tr key={worker.id}>
-                    <td>
-                      {worker.profile_image ? (
-                        <img
-                          src={`${baseUrl}/uploads/${worker.profile_image}`}
-                          alt={worker.name}
-                          className="rounded-circle"
-                          style={{ width: 36, height: 36, objectFit: 'cover' }}
-                        />
-                      ) : (
-                        <div className="bg-secondary text-white rounded-circle d-inline-flex justify-content-center align-items-center" style={{ width: 36, height: 36 }}>
-                          {worker.name?.charAt(0).toUpperCase()}
-                        </div>
-                      )}
-                    </td>
-                    <td>{worker.name}</td>
-                    <td>{worker.type}</td>
-                    <td>{worker.phone}</td>
-                    <td>{worker.salary}</td>
-                    {user.role === 'admin' && (
-                      <td>
-                        <button className="btn btn-sm btn-outline-secondary me-2" onClick={() => startEdit(worker)}>Edit</button>
-                        <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(worker.id)}>Delete</button>
-                      </td>
-                    )}
+            <div className="table-responsive">
+              <table className="table mb-0">
+                <thead>
+                  <tr>
+                    <th>Profile</th>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Phone</th>
+                    <th>Salary</th>
+                    {user.role === 'admin' && <th>Actions</th>}
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {displayedWorkers.map((worker) => (
+                    <tr key={worker.id}>
+                      <td>
+                        {worker.profile_image ? (
+                          <img
+                            src={`${baseUrl}/uploads/${worker.profile_image}`}
+                            alt={worker.name}
+                            className="rounded-circle"
+                            style={{ width: 36, height: 36, objectFit: 'cover' }}
+                          />
+                        ) : (
+                          <div className="bg-secondary text-white rounded-circle d-inline-flex justify-content-center align-items-center" style={{ width: 36, height: 36 }}>
+                            {worker.name?.charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                      </td>
+                      <td>{worker.name}</td>
+                      <td>{worker.type}</td>
+                      <td>{worker.phone}</td>
+                      <td>{worker.salary}</td>
+                      {user.role === 'admin' && (
+                        <td>
+                          <button className="btn btn-sm btn-outline-secondary me-2" onClick={() => startEdit(worker)}>Edit</button>
+                          <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(worker.id)}>Delete</button>
+                        </td>
+                      )}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
         </div>
       </div>

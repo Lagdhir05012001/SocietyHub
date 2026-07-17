@@ -50,7 +50,7 @@ function App() {
   return (
     <BrowserRouter>
       <NavBar user={user} onLogout={logout} />
-      <div className="container py-4">
+      <div className="container-fluid app-shell py-3 py-md-4">
         <Routes>
           <Route path="/" element={user ? <Navigate to="/dashboard" replace /> : <Navigate to="/login" replace />} />
           <Route path="/dashboard" element={requireAuth(<Dashboard user={user} />)} />

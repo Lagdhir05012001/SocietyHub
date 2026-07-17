@@ -10,7 +10,7 @@ export default function Pagination({ currentPage, totalPages, onPageChange }) {
 
   return (
     <nav aria-label="Page navigation" className="mt-3">
-      <ul className="pagination justify-content-center">
+      <ul className="pagination flex-wrap justify-content-center">
         <li className={`page-item${currentPage === 1 ? ' disabled' : ''}`}>
           <button className="page-link" type="button" onClick={() => onPageChange(currentPage - 1)}>Previous</button>
         </li>
