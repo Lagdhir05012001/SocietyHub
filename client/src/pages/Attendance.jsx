@@ -100,13 +100,25 @@ export default function Attendance({ user }) {
   const exportCsv = () => {
     const headers = ['Date', 'Worker', 'Type', 'Status'];
     const rows = filteredAttendance.map((record) => [formatDate(record.date), record.worker_name, record.worker_type, record.status]);
-    downloadCsv('attendance.csv', headers, rows);
+    const summaryRows = [
+      ['Total records', summary.total],
+      ['Filtered', summary.filtered],
+      ['Present', summary.present],
+      ['Absent', summary.absent],
+    ];
+    downloadCsv('attendance.csv', headers, rows, summaryRows);
   };
 
   const exportPdf = () => {
     const headers = ['Date', 'Worker', 'Type', 'Status'];
     const rows = filteredAttendance.map((record) => [formatDate(record.date), record.worker_name, record.worker_type, record.status]);
-    downloadPdf('attendance.pdf', 'Attendance Records', headers, rows);
+    const summaryRows = [
+      ['Total records', summary.total],
+      ['Filtered', summary.filtered],
+      ['Present', summary.present],
+      ['Absent', summary.absent],
+    ];
+    downloadPdf('attendance.pdf', 'Attendance Records', headers, rows, summaryRows);
   };
 
   const filteredAttendance = attendance.filter((record) => {

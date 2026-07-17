@@ -10,6 +10,7 @@ export default function Members({ user }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [form, setForm] = useState({ name: '', email: '', phone: '', flat_no: '', password: '' });
+  const [showPassword, setShowPassword] = useState(false);
   const [profileFile, setProfileFile] = useState(null);
   const [profileKey, setProfileKey] = useState(Date.now());
   const [editId, setEditId] = useState(null);
@@ -89,14 +90,22 @@ export default function Members({ user }) {
 
   const exportCsv = () => {
     const headers = ['Name', 'Email', 'Phone', 'House No'];
-    const rows = members.map((member) => [member.name, member.email, member.phone || '', member.flat_no]);
-    downloadCsv('members.csv', headers, rows);
+    const rows = filteredMembers.map((member) => [member.name, member.email, member.phone || '', member.flat_no]);
+    const summaryRows = [
+      ['Total members', summary.total],
+      ['Filtered', summary.filtered],
+    ];
+    downloadCsv('members.csv', headers, rows, summaryRows);
   };
 
   const exportPdf = () => {
     const headers = ['Name', 'Email', 'Phone', 'House No'];
-    const rows = members.map((member) => [member.name, member.email, member.phone || '', member.flat_no]);
-    downloadPdf('members.pdf', 'Members', headers, rows);
+    const rows = filteredMembers.map((member) => [member.name, member.email, member.phone || '', member.flat_no]);
+    const summaryRows = [
+      ['Total members', summary.total],
+      ['Filtered', summary.filtered],
+    ];
+    downloadPdf('members.pdf', 'Members', headers, rows, summaryRows);
   };
 
   const filteredMembers = members.filter((member) => {
@@ -127,7 +136,7 @@ export default function Members({ user }) {
     </div>
     <div className="summary-badges">
       <span className="badge bg-primary">Total members: {summary.total}</span>
-        <span className="badge bg-secondary">Showing: {summary.filtered}</span>
+        <span className="badge bg-secondary">Filtered: {summary.filtered}</span>
       </div>
       {error && <div className="alert alert-danger">{error}</div>}
       {user.role === 'admin' && isModalOpen && (
@@ -159,7 +168,12 @@ export default function Members({ user }) {
                 </div>
                 <div className="col-md-6">
                   <label className="form-label">Password</label>
-                  <input className="form-control" type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder={editId ? 'Leave blank to keep current password' : ''} />
+                  <div className="input-group">
+                    <input className="form-control" type={showPassword ? 'text' : 'password'} value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} placeholder={editId ? 'Leave blank to keep current password' : ''} />
+                    <button type="button" className="btn btn-outline-secondary" onClick={() => setShowPassword((prev) => !prev)}>
+                      {showPassword ? 'Hide' : 'Show'}
+                    </button>
+                  </div>
                 </div>
                 <div className="col-md-6">
                   <label className="form-label">Profile Image</label>
