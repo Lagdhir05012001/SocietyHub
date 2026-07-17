@@ -18,6 +18,15 @@ body {
   letter-spacing: 0.02em;
 }
 
+.brand-logo {
+  width: 36px;
+  height: 36px;
+  object-fit: contain;
+  border-radius: 10px;
+  background: #fff;
+  padding: 3px;
+}
+
 .navbar-nav {
   gap: 0.25rem;
 }
