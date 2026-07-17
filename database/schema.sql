@@ -59,6 +59,13 @@ CREATE TABLE IF NOT EXISTS maintenance (
   FOREIGN KEY (member_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS maintenance_proofs (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  maintenance_id INT NOT NULL,
+  filename VARCHAR(255) NOT NULL,
+  FOREIGN KEY (maintenance_id) REFERENCES maintenance(id) ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS activity_logs (
   id INT AUTO_INCREMENT PRIMARY KEY,
   user_id INT NULL,
