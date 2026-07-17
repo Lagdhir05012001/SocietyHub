@@ -15,6 +15,15 @@ export default function Members({ user }) {
   const [editId, setEditId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const closeModal = () => {
+    setEditId(null);
+    setForm({ name: '', email: '', phone: '', flat_no: '', password: '' });
+    setProfileFile(null);
+    setProfileKey(Date.now());
+    setIsModalOpen(false);
+  };
 
   const loadMembers = () => {
     setLoading(true);
@@ -53,6 +62,7 @@ export default function Members({ user }) {
       setProfileFile(null);
       setProfileKey(Date.now());
       setEditId(null);
+      setIsModalOpen(false);
       loadMembers();
     } catch (err) {
       setError(err.response?.data?.error || 'Unable to save member');
@@ -64,6 +74,7 @@ export default function Members({ user }) {
     setForm({ name: member.name, email: member.email, phone: member.phone || '', flat_no: member.flat_no || '', password: '' });
     setProfileFile(null);
     setProfileKey(Date.now());
+    setIsModalOpen(true);
   };
 
   const handleDelete = async (id) => {
@@ -107,20 +118,28 @@ export default function Members({ user }) {
     <div className="page-header">
       <h2 className="page-title">Members</h2>
       <div className="page-actions">
+        {user.role === 'admin' && (
+          <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>Add Member</button>
+        )}
         <button className="btn btn-outline-secondary" onClick={exportCsv}>Export CSV</button>
-          <button className="btn btn-outline-secondary" onClick={exportPdf}>Export PDF</button>
-        </div>
+        <button className="btn btn-outline-secondary" onClick={exportPdf}>Export PDF</button>
       </div>
+    </div>
     <div className="summary-badges">
       <span className="badge bg-primary">Total members: {summary.total}</span>
         <span className="badge bg-secondary">Showing: {summary.filtered}</span>
       </div>
       {error && <div className="alert alert-danger">{error}</div>}
-      {user.role === 'admin' && (
-        <div className="card mb-4 shadow-sm">
-          <div className="card-header">{editId ? 'Edit Member' : 'Add Member'}</div>
-          <div className="card-body">
-            <form onSubmit={handleSubmit}>
+      {user.role === 'admin' && isModalOpen && (
+        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">{editId ? 'Edit Member' : 'Add Member'}</h5>
+                <button type="button" className="btn-close" onClick={closeModal}></button>
+              </div>
+              <div className="modal-body">
+                <form onSubmit={handleSubmit}>
               <div className="row g-3">
                 <div className="col-md-6">
                   <label className="form-label">Name</label>
@@ -154,14 +173,16 @@ export default function Members({ user }) {
                   {editId && <small className="text-muted">Leave blank to keep existing profile</small>}
                 </div>
               </div>
-              <div className="mt-3">
-                <button className="btn btn-primary me-2" type="submit">{editId ? 'Update Member' : 'Add Member'}</button>
-                {editId && <button className="btn btn-secondary" type="button" onClick={() => { setEditId(null); setForm({ name: '', email: '', phone: '', flat_no: '', password: '' }); setProfileFile(null); setProfileKey(Date.now()); }}>Cancel</button>}
+              <div className="mt-4 text-end">
+                <button className="btn btn-secondary me-2" type="button" onClick={closeModal}>Cancel</button>
+                <button className="btn btn-primary" type="submit">{editId ? 'Update Member' : 'Add Member'}</button>
               </div>
             </form>
           </div>
         </div>
-      )}
+      </div>
+    </div>
+  )}
       <div className="card mb-3 shadow-sm">
         <div className="card-body">
           <div className="row g-3 align-items-end">

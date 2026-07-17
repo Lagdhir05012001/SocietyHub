@@ -15,6 +15,15 @@ export default function Workers({ user }) {
   const [editId, setEditId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+
+  const closeModal = () => {
+    setEditId(null);
+    setForm({ name: '', phone: '', type: '', salary: '' });
+    setProfileFile(null);
+    setProfileKey(Date.now());
+    setIsModalOpen(false);
+  };
 
   const loadWorkers = () => {
     setLoading(true);
@@ -50,6 +59,7 @@ export default function Workers({ user }) {
       setProfileFile(null);
       setProfileKey(Date.now());
       setEditId(null);
+      setIsModalOpen(false);
       loadWorkers();
     } catch (err) {
       setError(err.response?.data?.error || 'Unable to save worker');
@@ -61,6 +71,7 @@ export default function Workers({ user }) {
     setForm({ name: worker.name, phone: worker.phone || '', type: worker.type || '', salary: worker.salary || '' });
     setProfileFile(null);
     setProfileKey(Date.now());
+    setIsModalOpen(true);
   };
 
   const handleDelete = async (id) => {
@@ -104,20 +115,28 @@ export default function Workers({ user }) {
     <div className="page-header">
       <h2 className="page-title">Workers</h2>
       <div className="page-actions">
+        {user.role === 'admin' && (
+          <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>Add Worker</button>
+        )}
         <button className="btn btn-outline-secondary" onClick={exportCsv}>Export CSV</button>
-          <button className="btn btn-outline-secondary" onClick={exportPdf}>Export PDF</button>
-        </div>
+        <button className="btn btn-outline-secondary" onClick={exportPdf}>Export PDF</button>
       </div>
+    </div>
     <div className="summary-badges">
       <span className="badge bg-primary">Total workers: {summary.total}</span>
         <span className="badge bg-secondary">Showing: {summary.filtered}</span>
       </div>
       {error && <div className="alert alert-danger">{error}</div>}
-      {user.role === 'admin' && (
-        <div className="card mb-4 shadow-sm">
-          <div className="card-header">{editId ? 'Edit Worker' : 'Add Worker'}</div>
-          <div className="card-body">
-            <form onSubmit={handleSubmit}>
+      {user.role === 'admin' && isModalOpen && (
+        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">{editId ? 'Edit Worker' : 'Add Worker'}</h5>
+                <button type="button" className="btn-close" onClick={closeModal}></button>
+              </div>
+              <div className="modal-body">
+                <form onSubmit={handleSubmit}>
               <div className="row g-3">
                 <div className="col-md-6">
                   <label className="form-label">Name</label>
@@ -147,14 +166,16 @@ export default function Workers({ user }) {
                   {editId && <small className="text-muted">Leave blank to keep existing profile</small>}
                 </div>
               </div>
-              <div className="mt-3">
-                <button className="btn btn-primary me-2" type="submit">{editId ? 'Update Worker' : 'Add Worker'}</button>
-                {editId && <button className="btn btn-secondary" type="button" onClick={() => { setEditId(null); setForm({ name: '', phone: '', type: '', salary: '' }); setProfileFile(null); setProfileKey(Date.now()); }}>Cancel</button>}
+              <div className="mt-4 text-end">
+                <button className="btn btn-secondary me-2" type="button" onClick={closeModal}>Cancel</button>
+                <button className="btn btn-primary" type="submit">{editId ? 'Update Worker' : 'Add Worker'}</button>
               </div>
             </form>
           </div>
         </div>
-      )}
+      </div>
+    </div>
+  )}
       <div className="card mb-3 shadow-sm">
         <div className="card-body">
           <div className="row g-3 align-items-end">

@@ -33,6 +33,7 @@ export default function Attendance({ user }) {
   const [monthFilter, setMonthFilter] = useState('');
   const [yearFilter, setYearFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const loadData = () => {
     setLoading(true);
@@ -60,6 +61,7 @@ export default function Attendance({ user }) {
       }
       setForm({ worker_id: '', date: '', status: 'Present' });
       setEditId(null);
+      setIsModalOpen(false);
       loadData();
     } catch (err) {
       setError(err.response?.data?.error || 'Unable to save attendance');
@@ -69,6 +71,13 @@ export default function Attendance({ user }) {
   const startEdit = (record) => {
     setEditId(record.id);
     setForm({ worker_id: record.worker_id, date: record.date, status: record.status });
+    setIsModalOpen(true);
+  };
+
+  const cancelEdit = () => {
+    setEditId(null);
+    setForm({ worker_id: '', date: '', status: 'Present' });
+    setIsModalOpen(false);
   };
 
   const handleDelete = async (id) => {
@@ -119,10 +128,13 @@ export default function Attendance({ user }) {
     <div className="page-header">
       <h2 className="page-title">Worker Attendance</h2>
       <div className="page-actions">
+        {user.role === 'admin' && (
+          <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>Mark Attendance</button>
+        )}
         <button className="btn btn-outline-secondary" onClick={exportCsv}>Export CSV</button>
-          <button className="btn btn-outline-secondary" onClick={exportPdf}>Export PDF</button>
-        </div>
+        <button className="btn btn-outline-secondary" onClick={exportPdf}>Export PDF</button>
       </div>
+    </div>
     <div className="summary-badges">
       <span className="badge bg-primary">Total records: {summary.total}</span>
       <span className="badge bg-secondary">Filtered: {summary.filtered}</span>
@@ -130,11 +142,16 @@ export default function Attendance({ user }) {
         <span className="badge bg-danger">Absent: {summary.absent}</span>
       </div>
       {error && <div className="alert alert-danger">{error}</div>}
-      {user.role === 'admin' && (
-        <div className="card mb-4 shadow-sm">
-          <div className="card-header">{editId ? 'Edit Attendance' : 'Mark Attendance'}</div>
-          <div className="card-body">
-            <form onSubmit={handleSubmit}>
+      {user.role === 'admin' && isModalOpen && (
+        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">{editId ? 'Edit Attendance' : 'Mark Attendance'}</h5>
+                <button type="button" className="btn-close" onClick={cancelEdit}></button>
+              </div>
+              <div className="modal-body">
+                <form onSubmit={handleSubmit}>
               <div className="row g-3">
                 <div className="col-md-4">
                   <label className="form-label">Worker</label>
@@ -158,14 +175,16 @@ export default function Attendance({ user }) {
                   </select>
                 </div>
               </div>
-              <div className="mt-3">
-                <button className="btn btn-primary me-2" type="submit">{editId ? 'Update' : 'Save'}</button>
-                {editId && <button className="btn btn-secondary" type="button" onClick={() => { setEditId(null); setForm({ worker_id: '', date: '', status: 'Present' }); }}>Cancel</button>}
+              <div className="mt-4 text-end">
+                <button className="btn btn-secondary me-2" type="button" onClick={cancelEdit}>Cancel</button>
+                <button className="btn btn-primary" type="submit">{editId ? 'Update' : 'Save'}</button>
               </div>
             </form>
           </div>
         </div>
-      )}
+      </div>
+    </div>
+  )}
       <div className="card mb-3 shadow-sm">
         <div className="card-body">
           <div className="row g-3 align-items-end">
