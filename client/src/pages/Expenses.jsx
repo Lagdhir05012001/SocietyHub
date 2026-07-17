@@ -27,6 +27,7 @@ export default function Expenses({ user }) {
   const [monthFilter, setMonthFilter] = useState('');
   const [yearFilter, setYearFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const loadExpenses = () => {
     setLoading(true);
@@ -72,6 +73,7 @@ export default function Expenses({ user }) {
       setForm({ category: '', expense_date: '', amount: '', description: '', proofs: [] });
       setEditId(null);
       setFileInputKey(Date.now());
+      setIsModalOpen(false);
       loadExpenses();
     } catch (err) {
       setError(err.response?.data?.error || 'Unable to save expense');
@@ -97,12 +99,14 @@ export default function Expenses({ user }) {
       description: expense.description || '',
       proofs: [],
     });
+    setIsModalOpen(true);
   };
 
   const cancelEdit = () => {
     setEditId(null);
     setForm({ category: '', expense_date: '', amount: '', description: '', proofs: [] });
     setFileInputKey(Date.now());
+    setIsModalOpen(false);
   };
 
   const exportCsv = () => {
@@ -138,21 +142,29 @@ export default function Expenses({ user }) {
     <div className="page-header">
       <h2 className="page-title">Expenses</h2>
       <div className="page-actions">
+        {user.role === 'admin' && (
+          <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>Add Expense</button>
+        )}
         <button className="btn btn-outline-secondary" onClick={exportCsv}>Export CSV</button>
-          <button className="btn btn-outline-secondary" onClick={exportPdf}>Export PDF</button>
-        </div>
+        <button className="btn btn-outline-secondary" onClick={exportPdf}>Export PDF</button>
       </div>
+    </div>
     <div className="summary-badges">
       <span className="badge bg-primary">Total expenses: {summary.total}</span>
       <span className="badge bg-secondary">Filtered: {summary.filtered}</span>
         <span className="badge bg-success">Amount: ₹{summary.amount.toFixed(2)}</span>
       </div>
       {error && <div className="alert alert-danger">{error}</div>}
-      {user.role === 'admin' && (
-        <div className="card mb-4 shadow-sm">
-          <div className="card-header">{editId ? 'Edit Expense' : 'Add Expense'}</div>
-          <div className="card-body">
-            <form onSubmit={handleSubmit}>
+      {user.role === 'admin' && isModalOpen && (
+        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">{editId ? 'Edit Expense' : 'Add Expense'}</h5>
+                <button type="button" className="btn-close" onClick={cancelEdit}></button>
+              </div>
+              <div className="modal-body">
+                <form onSubmit={handleSubmit}>
               <div className="row g-3">
                 <div className="col-md-4">
                   <label className="form-label">Category</label>
@@ -186,14 +198,16 @@ export default function Expenses({ user }) {
                   )}
                 </div>
               </div>
-              <div className="mt-3">
-                <button className="btn btn-primary me-2" type="submit">{editId ? 'Update Expense' : 'Save Expense'}</button>
-                {editId && <button className="btn btn-secondary" type="button" onClick={cancelEdit}>Cancel</button>}
+              <div className="mt-4 text-end">
+                <button className="btn btn-secondary me-2" type="button" onClick={cancelEdit}>Cancel</button>
+                <button className="btn btn-primary" type="submit">{editId ? 'Update Expense' : 'Save Expense'}</button>
               </div>
             </form>
           </div>
         </div>
-      )}
+      </div>
+    </div>
+  )}
       <div className="card mb-3 shadow-sm">
         <div className="card-body">
           <div className="row g-3 align-items-end">
@@ -247,6 +261,7 @@ export default function Expenses({ user }) {
               <table className="table mb-0">
                 <thead>
                   <tr>
+                    <th>Sr No</th>
                     <th>Date</th>
                     <th>Category</th>
                     <th>Amount</th>
@@ -256,8 +271,9 @@ export default function Expenses({ user }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {displayedExpenses.map((expense) => (
+                  {displayedExpenses.map((expense, index) => (
                     <tr key={expense.id}>
+                      <td>{(currentPage - 1) * PAGE_SIZE + index + 1}</td>
                       <td>{formatDate(expense.expense_date)}</td>
                       <td>{expense.category}</td>
                       <td>{expense.amount}</td>

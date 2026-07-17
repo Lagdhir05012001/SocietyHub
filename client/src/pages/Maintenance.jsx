@@ -33,6 +33,8 @@ export default function Maintenance({ user }) {
   const [monthFilter, setMonthFilter] = useState('');
   const [yearFilter, setYearFilter] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isGenerateModalOpen, setIsGenerateModalOpen] = useState(false);
 
   const loadData = () => {
     setLoading(true);
@@ -72,6 +74,7 @@ export default function Maintenance({ user }) {
       }
       setForm({ member_id: '', month: '', year: '', amount: '', status: '' });
       setEditId(null);
+      setIsModalOpen(false);
       loadData();
     } catch (err) {
       setError(err.response?.data?.error || 'Unable to create maintenance record');
@@ -85,6 +88,7 @@ export default function Maintenance({ user }) {
       const month_year = buildMonthYear(generate.month, generate.year);
       await api.post('/maintenance/generate', { month_year, amount: generate.amount });
       setGenerate({ month: '', year: '', amount: '' });
+      setIsGenerateModalOpen(false);
       loadData();
     } catch (err) {
       setError(err.response?.data?.error || 'Unable to generate maintenance');
@@ -105,21 +109,23 @@ export default function Maintenance({ user }) {
     const [year, month] = record.month_year.split('-');
     setEditId(record.id);
     setForm({ member_id: record.member_id, month, year, amount: record.amount, status: record.status || '' });
+    setIsModalOpen(true);
   };
 
   const cancelEdit = () => {
     setEditId(null);
     setForm({ member_id: '', month: '', year: '', amount: '', status: '' });
+    setIsModalOpen(false);
   };
 
   const exportCsv = () => {
-    const headers = ['Month', 'Member', 'Flat', 'Amount', 'Status', 'Paid Date'];
+    const headers = ['Month', 'Member', 'House No', 'Amount', 'Status', 'Paid Date'];
     const rows = records.map((record) => [record.month_year, record.member_name, record.flat_no, record.amount, record.status, formatDateTime(record.paid_date)]);
     downloadCsv('maintenance.csv', headers, rows);
   };
 
   const exportPdf = () => {
-    const headers = ['Month', 'Member', 'Flat', 'Amount', 'Status', 'Paid Date'];
+    const headers = ['Month', 'Member', 'House No', 'Amount', 'Status', 'Paid Date'];
     const rows = filteredRecords.map((record) => [record.month_year, record.member_name, record.flat_no, record.amount, record.status, formatDateTime(record.paid_date)]);
     downloadPdf('maintenance.pdf', 'Maintenance Records', headers, rows);
   };
@@ -151,10 +157,16 @@ export default function Maintenance({ user }) {
     <div className="page-header">
       <h2 className="page-title">Maintenance Records</h2>
       <div className="page-actions">
+        {user.role === 'admin' && (
+          <>
+            <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>Add Maintenance</button>
+            <button className="btn btn-success" onClick={() => setIsGenerateModalOpen(true)}>Generate</button>
+          </>
+        )}
         <button className="btn btn-outline-secondary" onClick={exportCsv}>Export CSV</button>
-          <button className="btn btn-outline-secondary" onClick={exportPdf}>Export PDF</button>
-        </div>
+        <button className="btn btn-outline-secondary" onClick={exportPdf}>Export PDF</button>
       </div>
+    </div>
     <div className="summary-badges">
       <span className="badge bg-primary">Total records: {summary.total}</span>
       <span className="badge bg-secondary">Filtered: {summary.filtered}</span>
@@ -163,12 +175,16 @@ export default function Maintenance({ user }) {
         <span className="badge bg-warning text-dark">Unpaid amount: ₹{summary.unpaidAmount.toFixed(2)}</span>
       </div>
       {error && <div className="alert alert-danger">{error}</div>}
-      {user.role === 'admin' && (
-        <>
-          <div className="card mb-4 shadow-sm">
-            <div className="card-header">{editId ? 'Edit Maintenance' : 'Add Maintenance'}</div>
-            <div className="card-body">
-              <form onSubmit={handleSubmit}>
+      {user.role === 'admin' && isModalOpen && (
+        <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)', overflowY: 'auto' }}>
+          <div className="modal-dialog modal-lg">
+            <div className="modal-content">
+              <div className="modal-header">
+                <h5 className="modal-title">{editId ? 'Edit Maintenance' : 'Add Maintenance'}</h5>
+                <button type="button" className="btn-close" onClick={cancelEdit}></button>
+              </div>
+              <div className="modal-body">
+                <form onSubmit={handleSubmit}>
                 <div className="row g-3">
                   <div className="col-12 col-md-4">
                     <label className="form-label">Member</label>
@@ -212,49 +228,60 @@ export default function Maintenance({ user }) {
                     </select>
                   </div>
                 </div>
-                <div className="mt-3">
-                  <button className="btn btn-primary me-2" type="submit">{editId ? 'Update Maintenance' : 'Save Maintenance'}</button>
-                  {editId && (
-                    <button className="btn btn-secondary" type="button" onClick={cancelEdit}>Cancel</button>
-                  )}
+                <div className="mt-4 text-end">
+                  <button className="btn btn-secondary me-2" type="button" onClick={cancelEdit}>Cancel</button>
+                  <button className="btn btn-primary" type="submit">{editId ? 'Update Maintenance' : 'Save Maintenance'}</button>
                 </div>
               </form>
             </div>
           </div>
-          <div className="card mb-4 shadow-sm">
-            <div className="card-header">Generate Monthly Maintenance</div>
-            <div className="card-body">
-              <form onSubmit={handleGenerate} className="row g-3 align-items-end">
-                <div className="col-12 col-md-3">
-                  <label className="form-label">Month</label>
-                  <select className="form-select" value={generate.month} onChange={(e) => setGenerate({ ...generate, month: e.target.value })} required>
-                    <option value="">Month</option>
-                    {months.map((month) => (
-                      <option key={month.value} value={month.value}>{month.label}</option>
-                    ))}
-                  </select>
+        </div>
+      </div>
+    )}
+    {user.role === 'admin' && isGenerateModalOpen && (
+      <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)', overflowY: 'auto' }}>
+        <div className="modal-dialog">
+          <div className="modal-content">
+            <div className="modal-header">
+              <h5 className="modal-title">Generate Monthly Maintenance</h5>
+              <button type="button" className="btn-close" onClick={() => setIsGenerateModalOpen(false)}></button>
+            </div>
+            <div className="modal-body">
+              <form onSubmit={handleGenerate}>
+                <div className="row g-3">
+                  <div className="col-12">
+                    <label className="form-label">Month</label>
+                    <select className="form-select" value={generate.month} onChange={(e) => setGenerate({ ...generate, month: e.target.value })} required>
+                      <option value="">Month</option>
+                      {months.map((month) => (
+                        <option key={month.value} value={month.value}>{month.label}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="col-12">
+                    <label className="form-label">Year</label>
+                    <select className="form-select" value={generate.year} onChange={(e) => setGenerate({ ...generate, year: e.target.value })} required>
+                      <option value="">Year</option>
+                      {years.map((year) => (
+                        <option key={year} value={year}>{year}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="col-12">
+                    <label className="form-label">Amount</label>
+                    <input className="form-control" type="number" min="0" step="0.01" value={generate.amount} onChange={(e) => setGenerate({ ...generate, amount: e.target.value })} required />
+                  </div>
                 </div>
-                <div className="col-12 col-sm-6 col-md-2">
-                  <label className="form-label">Year</label>
-                  <select className="form-select" value={generate.year} onChange={(e) => setGenerate({ ...generate, year: e.target.value })} required>
-                    <option value="">Year</option>
-                    {years.map((year) => (
-                      <option key={year} value={year}>{year}</option>
-                    ))}
-                  </select>
-                </div>
-                <div className="col-12 col-md-4">
-                  <label className="form-label">Amount</label>
-                  <input className="form-control" type="number" min="0" step="0.01" value={generate.amount} onChange={(e) => setGenerate({ ...generate, amount: e.target.value })} required />
-                </div>
-                <div className="col-12 col-sm-6 col-md-2">
-                  <button className="btn btn-secondary w-100" type="submit">Generate</button>
+                <div className="mt-4 text-end">
+                  <button className="btn btn-secondary me-2" type="button" onClick={() => setIsGenerateModalOpen(false)}>Cancel</button>
+                  <button className="btn btn-primary" type="submit">Generate</button>
                 </div>
               </form>
             </div>
           </div>
-        </>
-      )}
+        </div>
+      </div>
+    )}
       <div className="card mb-3 shadow-sm">
         <div className="card-body">
           <div className="row g-3 align-items-end">
@@ -305,9 +332,10 @@ export default function Maintenance({ user }) {
               <table className="table mb-0">
                 <thead>
                   <tr>
+                    <th>Sr No</th>
                     <th>Month</th>
                     <th>Member</th>
-                    <th>Flat</th>
+                    <th>House No</th>
                     <th>Amount</th>
                     <th>Status</th>
                     <th>Paid Date</th>
@@ -315,8 +343,9 @@ export default function Maintenance({ user }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {displayedRecords.map((record) => (
+                  {displayedRecords.map((record, index) => (
                     <tr key={record.id}>
+                      <td>{(currentPage - 1) * PAGE_SIZE + index + 1}</td>
                       <td>{record.month_year}</td>
                       <td>{record.member_name}</td>
                       <td>{record.flat_no}</td>

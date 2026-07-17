@@ -12,7 +12,7 @@ export default function NavBar({ user, onLogout }) {
     <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
       <div className="container-fluid px-3 px-lg-4">
         <Link className="navbar-brand d-flex align-items-center gap-2" to="/" onClick={closeMenu}>
-          <img src="/logo.svg" alt="ShivTirth Society logo" className="brand-logo" />
+          <img src="/logo.png" alt="ShivTirth Society logo" className="brand-logo" />
           <span>ShivTirth</span>
         </Link>
         <button
