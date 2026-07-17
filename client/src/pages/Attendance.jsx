@@ -18,7 +18,14 @@ const months = [
   { value: '11', label: 'November' },
   { value: '12', label: 'December' },
 ];
-const years = ['2026', '2027', '2028', '2029', '2030'];
+const years = [
+  { value: '', label: 'Select Year' },
+  { value: '2026', label: '2026' },
+  { value: '2027', label: '2027' },
+  { value: '2028', label: '2028' },
+  { value: '2029', label: '2029' },
+  { value: '2030', label: '2030' },
+];
 const PAGE_SIZE = 10;
 
 export default function Attendance({ user }) {
@@ -59,7 +66,7 @@ export default function Attendance({ user }) {
       } else {
         await api.post('/attendance', form);
       }
-      setForm({ worker_id: '', date: '', status: 'Present' });
+      setForm({ worker_id: '', date: '', status: '' });
       setEditId(null);
       setIsModalOpen(false);
       loadData();
@@ -76,7 +83,7 @@ export default function Attendance({ user }) {
 
   const cancelEdit = () => {
     setEditId(null);
-    setForm({ worker_id: '', date: '', status: 'Present' });
+    setForm({ worker_id: '', date: '', status: '' });
     setIsModalOpen(false);
   };
 
@@ -129,7 +136,16 @@ export default function Attendance({ user }) {
       <h2 className="page-title">Worker Attendance</h2>
       <div className="page-actions">
         {user.role === 'admin' && (
-          <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>Mark Attendance</button>
+          <button
+            className="btn btn-primary"
+            onClick={() => {
+              setEditId(null);
+              setForm({ worker_id: '', date: '', status: '' });
+              setIsModalOpen(true);
+            }}
+          >
+            Mark Attendance
+          </button>
         )}
         <button className="btn btn-outline-secondary" onClick={exportCsv}>Export CSV</button>
         <button className="btn btn-outline-secondary" onClick={exportPdf}>Export PDF</button>
@@ -201,7 +217,7 @@ export default function Attendance({ user }) {
             <div className="col-12 col-sm-6 col-md-2">
               <label className="form-label">Status</label>
               <select className="form-select" value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}>
-                <option value="">All statuses</option>
+                <option value="">Select Status</option>
                 <option value="Present">Present</option>
                 <option value="Absent">Absent</option>
               </select>
@@ -218,7 +234,7 @@ export default function Attendance({ user }) {
               <label className="form-label">Year</label>
               <select className="form-select" value={yearFilter} onChange={(e) => { setYearFilter(e.target.value); setCurrentPage(1); }}>
                 {years.map((year) => (
-                  <option key={year} value={year}>{year || 'All years'}</option>
+                  <option key={year.value} value={year.value}>{year.label}</option>
                 ))}
               </select>
             </div>
