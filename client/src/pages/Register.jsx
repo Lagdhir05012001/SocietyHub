@@ -26,9 +26,8 @@ export default function Register({ onRegister }) {
       if (profile) {
         formData.append('profile', profile);
       }
-      const response = await api.post('/auth/register', formData);
-      onRegister(response.data.user, response.data.token);
-      navigate('/dashboard');
+      await api.post('/auth/register', formData);
+      navigate('/login');
     } catch (err) {
       setError(err.response?.data?.error || 'Registration failed');
     }
