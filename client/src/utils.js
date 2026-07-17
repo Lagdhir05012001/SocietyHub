@@ -1,4 +1,5 @@
 import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 
 export function formatDate(value) {
   if (!value) return '';
@@ -46,21 +47,14 @@ export function downloadPdf(filename, title, headers, rows) {
   const margin = 14;
   doc.setFontSize(14);
   doc.text(title, margin, 20);
-  doc.setFontSize(10);
-  let y = 28;
-  const lineHeight = 8;
-  const headerLine = headers.join(' | ');
-  doc.text(headerLine, margin, y);
-  y += lineHeight;
 
-  rows.forEach((row, index) => {
-    if (y > 280) {
-      doc.addPage();
-      y = 20;
-    }
-    const line = row.join(' | ');
-    doc.text(line, margin, y);
-    y += lineHeight;
+  autoTable(doc, {
+    startY: 28,
+    head: [headers],
+    body: rows,
+    theme: 'grid',
+    styles: { fontSize: 10 },
+    headStyles: { fillColor: [41, 128, 185] },
   });
 
   doc.save(filename);
