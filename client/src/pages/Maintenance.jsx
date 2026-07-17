@@ -332,6 +332,7 @@ export default function Maintenance({ user }) {
               <table className="table mb-0">
                 <thead>
                   <tr>
+                    <th>Sr No</th>
                     <th>Month</th>
                     <th>Member</th>
                     <th>House No</th>
@@ -342,8 +343,9 @@ export default function Maintenance({ user }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {displayedRecords.map((record) => (
+                  {displayedRecords.map((record, index) => (
                     <tr key={record.id}>
+                      <td>{(currentPage - 1) * PAGE_SIZE + index + 1}</td>
                       <td>{record.month_year}</td>
                       <td>{record.member_name}</td>
                       <td>{record.flat_no}</td>

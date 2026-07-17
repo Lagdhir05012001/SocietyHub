@@ -234,6 +234,7 @@ export default function Attendance({ user }) {
               <table className="table mb-0">
                 <thead>
                   <tr>
+                    <th>Sr No</th>
                     <th>Date</th>
                     <th>Worker</th>
                     <th>Type</th>
@@ -242,8 +243,9 @@ export default function Attendance({ user }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {displayedAttendance.map((record) => (
+                  {displayedAttendance.map((record, index) => (
                     <tr key={record.id}>
+                      <td>{(currentPage - 1) * PAGE_SIZE + index + 1}</td>
                       <td>{formatDate(record.date)}</td>
                       <td>{record.worker_name}</td>
                       <td>{record.worker_type}</td>

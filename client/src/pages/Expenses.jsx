@@ -261,6 +261,7 @@ export default function Expenses({ user }) {
               <table className="table mb-0">
                 <thead>
                   <tr>
+                    <th>Sr No</th>
                     <th>Date</th>
                     <th>Category</th>
                     <th>Amount</th>
@@ -270,8 +271,9 @@ export default function Expenses({ user }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {displayedExpenses.map((expense) => (
+                  {displayedExpenses.map((expense, index) => (
                     <tr key={expense.id}>
+                      <td>{(currentPage - 1) * PAGE_SIZE + index + 1}</td>
                       <td>{formatDate(expense.expense_date)}</td>
                       <td>{expense.category}</td>
                       <td>{expense.amount}</td>

@@ -208,6 +208,7 @@ export default function Members({ user }) {
               <table className="table mb-0">
                 <thead>
                   <tr>
+                    <th>Sr No</th>
                     <th>Profile</th>
                     <th>Name</th>
                     <th>Email</th>
@@ -217,8 +218,9 @@ export default function Members({ user }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {displayedMembers.map((member) => (
+                  {displayedMembers.map((member, index) => (
                     <tr key={member.id}>
+                      <td>{(currentPage - 1) * PAGE_SIZE + index + 1}</td>
                       <td>
                         {member.profile_image ? (
                           <img

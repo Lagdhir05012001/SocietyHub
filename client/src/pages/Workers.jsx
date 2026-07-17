@@ -201,6 +201,7 @@ export default function Workers({ user }) {
               <table className="table mb-0">
                 <thead>
                   <tr>
+                    <th>Sr No</th>
                     <th>Profile</th>
                     <th>Name</th>
                     <th>Type</th>
@@ -210,8 +211,9 @@ export default function Workers({ user }) {
                   </tr>
                 </thead>
                 <tbody>
-                  {displayedWorkers.map((worker) => (
+                  {displayedWorkers.map((worker, index) => (
                     <tr key={worker.id}>
+                      <td>{(currentPage - 1) * PAGE_SIZE + index + 1}</td>
                       <td>
                         {worker.profile_image ? (
                           <img
