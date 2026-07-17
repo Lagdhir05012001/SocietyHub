@@ -96,6 +96,7 @@ export default function Dashboard() {
                     <tr>
                       <th>Date</th>
                       <th>Worker</th>
+                      <th>Type</th>
                       <th>Status</th>
                     </tr>
                   </thead>
@@ -104,6 +105,7 @@ export default function Dashboard() {
                       <tr key={record.id}>
                         <td>{formatDate(record.date)}</td>
                         <td>{record.worker_name}</td>
+                        <td>{record.worker_type}</td>
                         <td>{record.status}</td>
                       </tr>
                     ))}

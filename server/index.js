@@ -113,7 +113,7 @@ app.get('/dashboard', verifyToken, async (req, res) => {
       'SELECT e.id, e.category, e.expense_date, e.amount, e.description FROM expenses e ORDER BY e.expense_date DESC LIMIT 5'
     );
     const recentAttendance = await query(
-      'SELECT a.id, w.name AS worker_name, a.date, a.status FROM attendance a JOIN workers w ON a.worker_id = w.id ORDER BY a.date DESC LIMIT 5'
+      'SELECT a.id, w.name AS worker_name, w.type AS worker_type, a.date, a.status FROM attendance a JOIN workers w ON a.worker_id = w.id ORDER BY a.date DESC LIMIT 5'
     );
 
     res.json({
