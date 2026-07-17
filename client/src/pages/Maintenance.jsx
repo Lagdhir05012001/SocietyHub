@@ -18,7 +18,14 @@ const months = [
   { value: '11', label: 'November' },
   { value: '12', label: 'December' },
 ];
-const years = ['2026', '2027', '2028', '2029', '2030'];
+const years = [
+  { value: '', label: 'Select Year' },
+  { value: '2026', label: '2026' },
+  { value: '2027', label: '2027' },
+  { value: '2028', label: '2028' },
+  { value: '2029', label: '2029' },
+  { value: '2030', label: '2030' },
+];
 
 export default function Maintenance({ user }) {
   const [records, setRecords] = useState([]);
@@ -316,7 +323,7 @@ export default function Maintenance({ user }) {
               <label className="form-label">Year</label>
               <select className="form-select" value={yearFilter} onChange={(e) => { setYearFilter(e.target.value); setCurrentPage(1); }}>
                 {years.map((year) => (
-                  <option key={year} value={year}>{year || 'All years'}</option>
+                  <option key={year.value} value={year.value}>{year.label}</option>
                 ))}
               </select>
             </div>
