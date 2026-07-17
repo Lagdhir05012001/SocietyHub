@@ -89,14 +89,22 @@ export default function Members({ user }) {
 
   const exportCsv = () => {
     const headers = ['Name', 'Email', 'Phone', 'House No'];
-    const rows = members.map((member) => [member.name, member.email, member.phone || '', member.flat_no]);
-    downloadCsv('members.csv', headers, rows);
+    const rows = filteredMembers.map((member) => [member.name, member.email, member.phone || '', member.flat_no]);
+    const summaryRows = [
+      ['Total members', summary.total],
+      ['Filtered', summary.filtered],
+    ];
+    downloadCsv('members.csv', headers, rows, summaryRows);
   };
 
   const exportPdf = () => {
     const headers = ['Name', 'Email', 'Phone', 'House No'];
-    const rows = members.map((member) => [member.name, member.email, member.phone || '', member.flat_no]);
-    downloadPdf('members.pdf', 'Members', headers, rows);
+    const rows = filteredMembers.map((member) => [member.name, member.email, member.phone || '', member.flat_no]);
+    const summaryRows = [
+      ['Total members', summary.total],
+      ['Filtered', summary.filtered],
+    ];
+    downloadPdf('members.pdf', 'Members', headers, rows, summaryRows);
   };
 
   const filteredMembers = members.filter((member) => {
@@ -127,7 +135,7 @@ export default function Members({ user }) {
     </div>
     <div className="summary-badges">
       <span className="badge bg-primary">Total members: {summary.total}</span>
-        <span className="badge bg-secondary">Showing: {summary.filtered}</span>
+        <span className="badge bg-secondary">Filtered: {summary.filtered}</span>
       </div>
       {error && <div className="alert alert-danger">{error}</div>}
       {user.role === 'admin' && isModalOpen && (

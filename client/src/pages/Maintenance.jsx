@@ -120,14 +120,28 @@ export default function Maintenance({ user }) {
 
   const exportCsv = () => {
     const headers = ['Month', 'Member', 'House No', 'Amount', 'Status', 'Paid Date'];
-    const rows = records.map((record) => [record.month_year, record.member_name, record.flat_no, record.amount, record.status, formatDateTime(record.paid_date)]);
-    downloadCsv('maintenance.csv', headers, rows);
+    const rows = filteredRecords.map((record) => [record.month_year, record.member_name, record.flat_no, record.amount, record.status, formatDateTime(record.paid_date)]);
+    const summaryRows = [
+      ['Total records', summary.total],
+      ['Filtered', summary.filtered],
+      ['Total amount', `${summary.amount.toFixed(2)}`],
+      ['Paid amount', `${summary.paidAmount.toFixed(2)}`],
+      ['Unpaid amount', `${summary.unpaidAmount.toFixed(2)}`],
+    ];
+    downloadCsv('maintenance.csv', headers, rows, summaryRows);
   };
 
   const exportPdf = () => {
     const headers = ['Month', 'Member', 'House No', 'Amount', 'Status', 'Paid Date'];
     const rows = filteredRecords.map((record) => [record.month_year, record.member_name, record.flat_no, record.amount, record.status, formatDateTime(record.paid_date)]);
-    downloadPdf('maintenance.pdf', 'Maintenance Records', headers, rows);
+    const summaryRows = [
+      ['Total records', summary.total],
+      ['Filtered', summary.filtered],
+      ['Total amount', `${summary.amount.toFixed(2)}`],
+      ['Paid amount', `${summary.paidAmount.toFixed(2)}`],
+    ['Unpaid amount', `${summary.unpaidAmount.toFixed(2)}`],
+    ];
+    downloadPdf('maintenance.pdf', 'Maintenance Records', headers, rows, summaryRows);
   };
 
   const filteredRecords = records.filter((record) => {

@@ -112,13 +112,23 @@ export default function Expenses({ user }) {
   const exportCsv = () => {
     const headers = ['Date', 'Category', 'Amount', 'Description'];
     const rows = filteredExpenses.map((expense) => [formatDate(expense.expense_date), expense.category, expense.amount, expense.description]);
-    downloadCsv('expenses.csv', headers, rows);
+    const summaryRows = [
+      ['Total expenses', summary.total],
+      ['Filtered', summary.filtered],
+      ['Amount', `${summary.amount.toFixed(2)}`],
+    ];
+    downloadCsv('expenses.csv', headers, rows, summaryRows);
   };
 
   const exportPdf = () => {
     const headers = ['Date', 'Category', 'Amount', 'Description'];
     const rows = filteredExpenses.map((expense) => [formatDate(expense.expense_date), expense.category, expense.amount, expense.description]);
-    downloadPdf('expenses.pdf', 'Expenses', headers, rows);
+    const summaryRows = [
+      ['Total expenses', summary.total],
+      ['Filtered', summary.filtered],
+      ['Amount', `${summary.amount.toFixed(2)}`],
+    ];
+    downloadPdf('expenses.pdf', 'Expenses', headers, rows, summaryRows);
   };
 
   const filteredExpenses = expenses.filter((expense) => {
