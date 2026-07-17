@@ -58,7 +58,7 @@ export default function Register({ onRegister }) {
                 <input className="form-control" value={phone} onChange={(e) => setPhone(e.target.value)} />
               </div>
               <div className="mb-3">
-                <label className="form-label">Flat Number</label>
+                <label className="form-label">House No</label>
                 <input className="form-control" value={flatNo} onChange={(e) => setFlatNo(e.target.value)} required />
               </div>
               <div className="mb-3">

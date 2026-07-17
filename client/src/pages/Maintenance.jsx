@@ -119,13 +119,13 @@ export default function Maintenance({ user }) {
   };
 
   const exportCsv = () => {
-    const headers = ['Month', 'Member', 'Flat', 'Amount', 'Status', 'Paid Date'];
+    const headers = ['Month', 'Member', 'House No', 'Amount', 'Status', 'Paid Date'];
     const rows = records.map((record) => [record.month_year, record.member_name, record.flat_no, record.amount, record.status, formatDateTime(record.paid_date)]);
     downloadCsv('maintenance.csv', headers, rows);
   };
 
   const exportPdf = () => {
-    const headers = ['Month', 'Member', 'Flat', 'Amount', 'Status', 'Paid Date'];
+    const headers = ['Month', 'Member', 'House No', 'Amount', 'Status', 'Paid Date'];
     const rows = filteredRecords.map((record) => [record.month_year, record.member_name, record.flat_no, record.amount, record.status, formatDateTime(record.paid_date)]);
     downloadPdf('maintenance.pdf', 'Maintenance Records', headers, rows);
   };
@@ -334,7 +334,7 @@ export default function Maintenance({ user }) {
                   <tr>
                     <th>Month</th>
                     <th>Member</th>
-                    <th>Flat</th>
+                    <th>House No</th>
                     <th>Amount</th>
                     <th>Status</th>
                     <th>Paid Date</th>

@@ -88,13 +88,13 @@ export default function Members({ user }) {
   };
 
   const exportCsv = () => {
-    const headers = ['Name', 'Email', 'Phone', 'Flat'];
+    const headers = ['Name', 'Email', 'Phone', 'House No'];
     const rows = members.map((member) => [member.name, member.email, member.phone || '', member.flat_no]);
     downloadCsv('members.csv', headers, rows);
   };
 
   const exportPdf = () => {
-    const headers = ['Name', 'Email', 'Phone', 'Flat'];
+    const headers = ['Name', 'Email', 'Phone', 'House No'];
     const rows = members.map((member) => [member.name, member.email, member.phone || '', member.flat_no]);
     downloadPdf('members.pdf', 'Members', headers, rows);
   };
@@ -154,7 +154,7 @@ export default function Members({ user }) {
                   <input className="form-control" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} />
                 </div>
                 <div className="col-md-6">
-                  <label className="form-label">Flat Number</label>
+                  <label className="form-label">House No</label>
                   <input className="form-control" value={form.flat_no} onChange={(e) => setForm({ ...form, flat_no: e.target.value })} required />
                 </div>
                 <div className="col-md-6">
@@ -212,7 +212,7 @@ export default function Members({ user }) {
                     <th>Name</th>
                     <th>Email</th>
                     <th>Phone</th>
-                    <th>Flat</th>
+                    <th>House No</th>
                     {user.role === 'admin' && <th>Actions</th>}
                   </tr>
                 </thead>
