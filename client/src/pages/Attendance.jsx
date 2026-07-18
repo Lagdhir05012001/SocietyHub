@@ -4,7 +4,7 @@ import { downloadCsv, downloadPdf, formatDate } from '../utils';
 import Pagination from '../components/Pagination';
 
 const months = [
-  { value: '', label: 'All months' },
+  { value: '', label: 'Select Month' },
   { value: '01', label: 'January' },
   { value: '02', label: 'February' },
   { value: '03', label: 'March' },
@@ -184,7 +184,7 @@ export default function Attendance({ user }) {
                 <div className="col-md-4">
                   <label className="form-label">Worker</label>
                   <select className="form-select" value={form.worker_id} onChange={(e) => setForm({ ...form, worker_id: e.target.value })} required>
-                    <option value="">Select a worker</option>
+                    <option value="">Select Worker</option>
                     {workers.map((worker) => (
                       <option key={worker.id} value={worker.id}>{worker.name}</option>
                     ))}
@@ -197,7 +197,7 @@ export default function Attendance({ user }) {
                 <div className="col-md-4">
                   <label className="form-label">Status</label>
                   <select className="form-select" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} required>
-                    <option value="">Select status</option>
+                    <option value="">Select Status</option>
                     <option value="Present">Present</option>
                     <option value="Absent">Absent</option>
                   </select>

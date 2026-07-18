@@ -215,7 +215,7 @@ export default function Maintenance({ user }) {
                   <div className="col-12 col-md-4">
                     <label className="form-label">Member</label>
                     <select className="form-select" value={form.member_id} onChange={(e) => setForm({ ...form, member_id: e.target.value })} required>
-                      <option value="">Select member</option>
+                      <option value="">Select Member</option>
                       {members.map((member) => (
                         <option key={member.id} value={member.id}>{member.name} - {member.flat_no}</option>
                       ))}
@@ -248,7 +248,7 @@ export default function Maintenance({ user }) {
                   <div className="col-12 col-md-4">
                     <label className="form-label">Status</label>
                     <select className="form-select" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} required>
-                      <option value="">Select status</option>
+                      <option value="">Select Status</option>
                       <option value="Unpaid">Unpaid</option>
                       <option value="Paid">Paid</option>
                     </select>
@@ -329,7 +329,7 @@ export default function Maintenance({ user }) {
             <div className="col-12 col-sm-6 col-md-2">
               <label className="form-label">Status</label>
               <select className="form-select" value={statusFilter} onChange={(e) => { setStatusFilter(e.target.value); setCurrentPage(1); }}>
-                <option value="">All statuses</option>
+                <option value="">Select Status</option>
                 <option value="Paid">Paid</option>
                 <option value="Unpaid">Unpaid</option>
               </select>
@@ -337,7 +337,7 @@ export default function Maintenance({ user }) {
             <div className="col-12 col-sm-6 col-md-2">
               <label className="form-label">Month</label>
               <select className="form-select" value={monthFilter} onChange={(e) => { setMonthFilter(e.target.value); setCurrentPage(1); }}>
-                <option value="">All months</option>
+                <option value="">Select Month</option>
                 {months.map((month) => (
                   <option key={month.value} value={month.value}>{month.label}</option>
                 ))}
