@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const bcrypt = require('bcrypt');
@@ -644,7 +645,7 @@ app.use((err, req, res, next) => {
   next(err);
 });
 
-const port = process.env.PORT || 4000;
+const port = process.env.PORT;
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
