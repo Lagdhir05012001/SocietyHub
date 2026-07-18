@@ -29,6 +29,15 @@ function App() {
     }
   }, [user]);
 
+  useEffect(() => {
+    const handleAuthExpired = () => {
+      setUser(null);
+    };
+
+    window.addEventListener('auth:expired', handleAuthExpired);
+    return () => window.removeEventListener('auth:expired', handleAuthExpired);
+  }, []);
+
   const login = (userData, token) => {
     localStorage.setItem('societyhub-token', token);
     localStorage.setItem('societyhub-user', JSON.stringify(userData));
