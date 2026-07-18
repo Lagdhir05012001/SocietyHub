@@ -57,16 +57,10 @@ export default function Expenses({ user }) {
       data.append('expense_date', form.expense_date);
       data.append('amount', form.amount);
       data.append('description', form.description);
-      if (!editId) {
-        files.forEach((file) => data.append('proofs', file));
-      }
+      files.forEach((file) => data.append('proofs', file));
+
       if (editId) {
-        await api.put(`/expenses/${editId}`, {
-          category: form.category,
-          expense_date: form.expense_date,
-          amount: form.amount,
-          description: form.description,
-        });
+        await api.put(`/expenses/${editId}`, data, { headers: { 'Content-Type': 'multipart/form-data' } });
       } else {
         await api.post('/expenses', data, { headers: { 'Content-Type': 'multipart/form-data' } });
       }
@@ -201,11 +195,8 @@ export default function Expenses({ user }) {
                 </div>
                 <div className="col-md-12">
                   <label className="form-label">Proof Images</label>
-                  {!editId ? (
-                    <input key={fileInputKey} className="form-control" type="file" multiple accept=".png,.jpg,.jpeg" onChange={(e) => setForm({ ...form, proofs: e.target.files })} />
-                  ) : (
-                    <div className="form-text">Proof images cannot be changed while editing.</div>
-                  )}
+                  <input key={fileInputKey} className="form-control" type="file" multiple accept=".png,.jpg,.jpeg" onChange={(e) => setForm({ ...form, proofs: e.target.files })} />
+                  {editId && <div className="form-text">Leave blank to keep existing proofs, or select new images to replace them.</div>}
                 </div>
               </div>
               <div className="mt-4 text-end">

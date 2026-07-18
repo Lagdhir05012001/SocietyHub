@@ -26,7 +26,8 @@ export default function Maintenance({ user }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [editId, setEditId] = useState(null);
-  const [form, setForm] = useState({ member_id: '', month: '', year: '', amount: '', status: '' });
+  const [form, setForm] = useState({ member_id: '', month: '', year: '', amount: '', status: '', proofs: [] });
+  const [fileInputKey, setFileInputKey] = useState(Date.now());
   const [generate, setGenerate] = useState({ month: '', year: '', amount: '' });
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -60,20 +61,29 @@ export default function Maintenance({ user }) {
     event.preventDefault();
     setError('');
     try {
-      const month_year = buildMonthYear(form.month, form.year);
-      const payload = {
-        member_id: form.member_id,
-        month_year,
-        amount: form.amount,
-        status: form.status,
-      };
-      if (editId) {
-        await api.put(`/maintenance/${editId}`, payload);
-      } else {
-        await api.post('/maintenance', payload);
+      const files = Array.from(form.proofs || []);
+      const allowedTypes = ['image/png', 'image/jpeg'];
+      const invalidFile = files.find((file) => !allowedTypes.includes(file.type));
+      if (invalidFile) {
+        setError('Only PNG and JPG images are allowed for proof uploads.');
+        return;
       }
-      setForm({ member_id: '', month: '', year: '', amount: '', status: '' });
+      const month_year = buildMonthYear(form.month, form.year);
+      const data = new FormData();
+      data.append('member_id', form.member_id);
+      data.append('month_year', month_year);
+      data.append('amount', form.amount);
+      data.append('status', form.status);
+      files.forEach((file) => data.append('proofs', file));
+
+      if (editId) {
+        await api.put(`/maintenance/${editId}`, data, { headers: { 'Content-Type': 'multipart/form-data' } });
+      } else {
+        await api.post('/maintenance', data, { headers: { 'Content-Type': 'multipart/form-data' } });
+      }
+      setForm({ member_id: '', month: '', year: '', amount: '', status: '', proofs: [] });
       setEditId(null);
+      setFileInputKey(Date.now());
       setIsModalOpen(false);
       loadData();
     } catch (err) {
@@ -108,13 +118,15 @@ export default function Maintenance({ user }) {
   const startEdit = (record) => {
     const [year, month] = record.month_year.split('-');
     setEditId(record.id);
-    setForm({ member_id: record.member_id, month, year, amount: record.amount, status: record.status || '' });
+    setForm({ member_id: record.member_id, month, year, amount: record.amount, status: record.status || '', proofs: [] });
+    setFileInputKey(Date.now());
     setIsModalOpen(true);
   };
 
   const cancelEdit = () => {
     setEditId(null);
-    setForm({ member_id: '', month: '', year: '', amount: '', status: '' });
+    setForm({ member_id: '', month: '', year: '', amount: '', status: '', proofs: [] });
+    setFileInputKey(Date.now());
     setIsModalOpen(false);
   };
 
@@ -240,6 +252,11 @@ export default function Maintenance({ user }) {
                       <option value="Unpaid">Unpaid</option>
                       <option value="Paid">Paid</option>
                     </select>
+                  </div>
+                  <div className="col-12">
+                    <label className="form-label">Proof Images</label>
+                    <input key={fileInputKey} className="form-control" type="file" multiple accept=".png,.jpg,.jpeg" onChange={(e) => setForm({ ...form, proofs: e.target.files })} />
+                    {editId && <div className="form-text">Leave blank to keep existing proofs, or select new images to replace them.</div>}
                   </div>
                 </div>
                 <div className="mt-4 text-end">
