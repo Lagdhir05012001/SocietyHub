@@ -173,7 +173,7 @@ export default function Expenses({ user }) {
                 <div className="col-md-4">
                   <label className="form-label">Category</label>
                   <select className="form-select" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value })} required>
-                    <option value="">Select category</option>
+                    <option value="">Select Category</option>
                     {categories.map((category) => (
                       <option key={category} value={category}>{category}</option>
                     ))}
@@ -215,7 +215,7 @@ export default function Expenses({ user }) {
             <div className="col-12 col-md-3">
               <label className="form-label">Category</label>
               <select className="form-select" value={categoryFilter} onChange={(e) => { setCategoryFilter(e.target.value); setCurrentPage(1); }}>
-                <option value="">All categories</option>
+                <option value="">Select Category</option>
                 {categories.map((category) => (
                   <option key={category} value={category}>{category}</option>
                 ))}
@@ -224,7 +224,7 @@ export default function Expenses({ user }) {
             <div className="col-12 col-sm-6 col-md-2">
               <label className="form-label">Month</label>
               <select className="form-select" value={monthFilter} onChange={(e) => { setMonthFilter(e.target.value); setCurrentPage(1); }}>
-                <option value="">All months</option>
+                <option value="">Select Month</option>
                 <option value="01">January</option>
                 <option value="02">February</option>
                 <option value="03">March</option>
@@ -242,7 +242,7 @@ export default function Expenses({ user }) {
             <div className="col-12 col-sm-6 col-md-2">
               <label className="form-label">Year</label>
               <select className="form-select" value={yearFilter} onChange={(e) => { setYearFilter(e.target.value); setCurrentPage(1); }}>
-                <option value="">All years</option>
+                <option value="">Select Year</option>
                 <option value="2026">2026</option>
                 <option value="2027">2027</option>
                 <option value="2028">2028</option>
