@@ -279,9 +279,13 @@ export default function Expenses({ user }) {
                       <td>{expense.category}</td>
                       <td>{expense.amount}</td>
                       <td>{expense.description}</td>
-                      <td>{expense.proofs?.map((proof, index) => (
-                        <div key={index}><a href={`${api.defaults.baseURL}/uploads/${proof}`} target="_blank" rel="noreferrer">View</a></div>
-                      ))}</td>
+                      <td>
+                        {expense.proofs && expense.proofs.length > 0
+                          ? expense.proofs.map((proof, i) => (
+                            <div key={i}><a href={`${api.defaults.baseURL}/uploads/${proof}`} target="_blank" rel="noreferrer">Download</a></div>
+                          ))
+                          : '-'}
+                      </td>
                       {user.role === 'admin' && (
                         <td>
                           <button className="btn btn-sm btn-outline-secondary me-2" onClick={() => startEdit(expense)}>Edit</button>

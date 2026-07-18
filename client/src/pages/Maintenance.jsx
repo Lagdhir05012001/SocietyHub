@@ -371,6 +371,7 @@ export default function Maintenance({ user }) {
                     <th>Amount</th>
                     <th>Status</th>
                     <th>Paid Date</th>
+                    <th>Proofs</th>
                     {user.role === 'admin' && <th>Actions</th>}
                   </tr>
                 </thead>
@@ -388,6 +389,15 @@ export default function Maintenance({ user }) {
                         </span>
                       </td>
                       <td>{record.paid_date ? formatDateTime(record.paid_date) : '-'}</td>
+                      <td>
+                        {record.proofs && record.proofs.length > 0
+                          ? record.proofs.map((proof, i) => (
+                            <div key={i}>
+                              <a href={`${api.defaults.baseURL}/uploads/${proof}`} target="_blank" rel="noreferrer">Download</a>
+                            </div>
+                          ))
+                          : '-'}
+                      </td>
                       {user.role === 'admin' && (
                         <td>
                           <button className="btn btn-sm btn-outline-secondary me-2" onClick={() => startEdit(record)}>Edit</button>
