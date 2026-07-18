@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken');
 
-const secret = process.env.JWT_SECRET || 'societyhub-secret';
+const secret = process.env.JWT_SECRET;
 
 function verifyToken(req, res, next) {
   const authHeader = req.headers.authorization;

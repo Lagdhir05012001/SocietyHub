@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const bcrypt = require('bcrypt');
@@ -448,7 +449,7 @@ app.post('/expenses', verifyToken, requireAdmin, upload.array('proofs', 5), asyn
   }
 });
 
-app.put('/expenses/:id', verifyToken, requireAdmin, async (req, res) => {
+app.put('/expenses/:id', verifyToken, requireAdmin, upload.array('proofs', 5), async (req, res) => {
   try {
     const { category, expense_date, amount, description } = req.body;
     const fields = [];
@@ -473,11 +474,19 @@ app.put('/expenses/:id', verifyToken, requireAdmin, async (req, res) => {
       fields.push('description = ?');
       values.push(description);
     }
-    if (!fields.length) {
+    if (!fields.length && (!req.files || !req.files.length)) {
       return res.status(400).json({ error: 'No updates provided' });
     }
-    values.push(req.params.id);
-    await query(`UPDATE expenses SET ${fields.join(', ')} WHERE id = ?`, values);
+    if (fields.length) {
+      values.push(req.params.id);
+      await query(`UPDATE expenses SET ${fields.join(', ')} WHERE id = ?`, values);
+    }
+    if (req.files && req.files.length) {
+      await query('DELETE FROM expense_proofs WHERE expense_id = ?', [req.params.id]);
+      for (const file of req.files) {
+        await query('INSERT INTO expense_proofs (expense_id, filename) VALUES (?, ?)', [req.params.id, file.filename]);
+      }
+    }
     await logActivity(req.user.id, req.user.name, 'Update expense', `Updated expense id ${req.params.id}`);
     res.json({ message: 'Expense updated' });
   } catch (error) {
@@ -501,9 +510,12 @@ app.delete('/expenses/:id', verifyToken, requireAdmin, async (req, res) => {
 app.get('/maintenance', verifyToken, async (req, res) => {
   try {
     const records = await query(
-      'SELECT m.id, m.member_id, u.name AS member_name, u.flat_no, m.month_year, m.amount, m.status, m.paid_date, m.created_at FROM maintenance m JOIN users u ON m.member_id = u.id ORDER BY m.month_year DESC, m.created_at DESC'
+      'SELECT m.id, m.member_id, u.name AS member_name, u.flat_no, m.month_year, m.amount, m.status, m.paid_date, m.created_at, GROUP_CONCAT(p.filename) AS proofs FROM maintenance m JOIN users u ON m.member_id = u.id LEFT JOIN maintenance_proofs p ON m.id = p.maintenance_id GROUP BY m.id, m.member_id, u.name, u.flat_no, m.month_year, m.amount, m.status, m.paid_date, m.created_at ORDER BY m.month_year DESC, m.created_at DESC'
     );
-    res.json(records);
+    res.json(records.map((row) => ({
+      ...row,
+      proofs: row.proofs ? row.proofs.split(',') : [],
+    })));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Unable to load maintenance records' });
@@ -520,17 +532,23 @@ app.get('/activity-log', verifyToken, requireAdmin, async (req, res) => {
   }
 });
 
-app.post('/maintenance', verifyToken, requireAdmin, async (req, res) => {
+app.post('/maintenance', verifyToken, requireAdmin, upload.array('proofs', 5), async (req, res) => {
   try {
     const { member_id, month_year, amount, status } = req.body;
     const amountValue = parsePositiveNumber(amount);
     if (!member_id || !month_year || amountValue === null) {
       return res.status(400).json({ error: 'Member, month and amount are required and amount must be non-negative' });
     }
-    await query(
+    const result = await query(
       'INSERT INTO maintenance (member_id, month_year, amount, status, paid_date) VALUES (?, ?, ?, ?, ?)',
       [member_id, month_year, amountValue, status || 'Unpaid', status === 'Paid' ? new Date() : null]
     );
+    const maintenanceId = result.insertId;
+    if (req.files && req.files.length) {
+      for (const file of req.files) {
+        await query('INSERT INTO maintenance_proofs (maintenance_id, filename) VALUES (?, ?)', [maintenanceId, file.filename]);
+      }
+    }
     await logActivity(req.user.id, req.user.name, 'Create maintenance', `Created maintenance record for member ${member_id} for ${month_year}`);
     res.status(201).json({ message: 'Maintenance record created' });
   } catch (error) {
@@ -539,7 +557,7 @@ app.post('/maintenance', verifyToken, requireAdmin, async (req, res) => {
   }
 });
 
-app.put('/maintenance/:id', verifyToken, requireAdmin, async (req, res) => {
+app.put('/maintenance/:id', verifyToken, requireAdmin, upload.array('proofs', 5), async (req, res) => {
   try {
     const { member_id, month_year, amount, status } = req.body;
     const fields = [];
@@ -566,11 +584,19 @@ app.put('/maintenance/:id', verifyToken, requireAdmin, async (req, res) => {
       fields.push('paid_date = ?');
       values.push(status === 'Paid' ? new Date() : null);
     }
-    if (!fields.length) {
+    if (!fields.length && (!req.files || !req.files.length)) {
       return res.status(400).json({ error: 'No updates provided' });
     }
-    values.push(req.params.id);
-    await query(`UPDATE maintenance SET ${fields.join(', ')} WHERE id = ?`, values);
+    if (fields.length) {
+      values.push(req.params.id);
+      await query(`UPDATE maintenance SET ${fields.join(', ')} WHERE id = ?`, values);
+    }
+    if (req.files && req.files.length) {
+      await query('DELETE FROM maintenance_proofs WHERE maintenance_id = ?', [req.params.id]);
+      for (const file of req.files) {
+        await query('INSERT INTO maintenance_proofs (maintenance_id, filename) VALUES (?, ?)', [req.params.id, file.filename]);
+      }
+    }
     await logActivity(req.user.id, req.user.name, 'Update maintenance', `Updated maintenance id ${req.params.id}`);
     res.json({ message: 'Maintenance updated' });
   } catch (error) {
@@ -619,7 +645,7 @@ app.use((err, req, res, next) => {
   next(err);
 });
 
-const port = process.env.PORT || 4000;
+const port = process.env.PORT;
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
