@@ -53,7 +53,9 @@ CREATE TABLE IF NOT EXISTS maintenance (
   member_id INT NOT NULL,
   month_year VARCHAR(20) NOT NULL,
   amount DECIMAL(10,2) NOT NULL,
+  description TEXT,
   status ENUM('Paid', 'Unpaid') NOT NULL DEFAULT 'Unpaid',
+  payment_mode ENUM('Cash', 'UPI', 'Cheque', 'Bank Transfer', 'Other') DEFAULT NULL,
   paid_date DATETIME NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (member_id) REFERENCES users(id) ON DELETE CASCADE
