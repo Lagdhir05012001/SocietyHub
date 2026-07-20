@@ -510,7 +510,7 @@ app.delete('/expenses/:id', verifyToken, requireAdmin, async (req, res) => {
 app.get('/maintenance', verifyToken, async (req, res) => {
   try {
     const records = await query(
-      'SELECT m.id, m.member_id, u.name AS member_name, u.flat_no, m.month_year, m.amount, m.status, m.paid_date, m.created_at, GROUP_CONCAT(p.filename) AS proofs FROM maintenance m JOIN users u ON m.member_id = u.id LEFT JOIN maintenance_proofs p ON m.id = p.maintenance_id GROUP BY m.id, m.member_id, u.name, u.flat_no, m.month_year, m.amount, m.status, m.paid_date, m.created_at ORDER BY m.month_year DESC, m.created_at DESC'
+      'SELECT m.id, m.member_id, u.name AS member_name, u.flat_no, m.month_year, m.amount, m.description, m.status, m.payment_mode, m.paid_date, m.created_at, GROUP_CONCAT(p.filename) AS proofs FROM maintenance m JOIN users u ON m.member_id = u.id LEFT JOIN maintenance_proofs p ON m.id = p.maintenance_id GROUP BY m.id, m.member_id, u.name, u.flat_no, m.month_year, m.amount, m.description, m.status, m.payment_mode, m.paid_date, m.created_at ORDER BY m.month_year DESC, m.created_at DESC'
     );
     res.json(records.map((row) => ({
       ...row,
@@ -534,14 +534,14 @@ app.get('/activity-log', verifyToken, requireAdmin, async (req, res) => {
 
 app.post('/maintenance', verifyToken, requireAdmin, upload.array('proofs', 5), async (req, res) => {
   try {
-    const { member_id, month_year, amount, status } = req.body;
+    const { member_id, month_year, amount, status, payment_mode, description } = req.body;
     const amountValue = parsePositiveNumber(amount);
     if (!member_id || !month_year || amountValue === null) {
       return res.status(400).json({ error: 'Member, month and amount are required and amount must be non-negative' });
     }
     const result = await query(
-      'INSERT INTO maintenance (member_id, month_year, amount, status, paid_date) VALUES (?, ?, ?, ?, ?)',
-      [member_id, month_year, amountValue, status || 'Unpaid', status === 'Paid' ? new Date() : null]
+      'INSERT INTO maintenance (member_id, month_year, amount, description, status, paid_date, payment_mode) VALUES (?, ?, ?, ?, ?, ?, ?)',
+      [member_id, month_year, amountValue, description || '', status || 'Unpaid', status === 'Paid' ? new Date() : null, payment_mode || null]
     );
     const maintenanceId = result.insertId;
     if (req.files && req.files.length) {
@@ -559,7 +559,7 @@ app.post('/maintenance', verifyToken, requireAdmin, upload.array('proofs', 5), a
 
 app.put('/maintenance/:id', verifyToken, requireAdmin, upload.array('proofs', 5), async (req, res) => {
   try {
-    const { member_id, month_year, amount, status } = req.body;
+    const { member_id, month_year, amount, status, payment_mode, description } = req.body;
     const fields = [];
     const values = [];
     if (member_id) {
@@ -583,6 +583,14 @@ app.put('/maintenance/:id', verifyToken, requireAdmin, upload.array('proofs', 5)
       values.push(status);
       fields.push('paid_date = ?');
       values.push(status === 'Paid' ? new Date() : null);
+    }
+    if (payment_mode !== undefined) {
+      fields.push('payment_mode = ?');
+      values.push(payment_mode || null);
+    }
+    if (description !== undefined) {
+      fields.push('description = ?');
+      values.push(description || '');
     }
     if (!fields.length && (!req.files || !req.files.length)) {
       return res.status(400).json({ error: 'No updates provided' });
@@ -624,8 +632,8 @@ app.post('/maintenance/generate', verifyToken, requireAdmin, async (req, res) =>
     }
     const members = await query('SELECT id FROM users WHERE role = ?', ['member']);
     for (const member of members) {
-      await query(`INSERT INTO maintenance (member_id, month_year, amount, status, paid_date) VALUES (?, ?, ?, ?, ?)`,
-        [member.id, month_year, amountValue, 'Unpaid', null]);
+      await query(`INSERT INTO maintenance (member_id, month_year, amount, description, status, paid_date, payment_mode) VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        [member.id, month_year, amountValue, null, 'Unpaid', null, null]);
     }
     await logActivity(req.user.id, req.user.name, 'Generate maintenance', `Generated monthly maintenance ${month_year} for ${members.length} members`);
     res.status(201).json({ message: 'Monthly maintenance generated' });

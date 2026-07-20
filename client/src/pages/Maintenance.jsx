@@ -19,6 +19,7 @@ const months = [
   { value: '12', label: 'December' },
 ];
 const years = ['2026', '2027', '2028', '2029', '2030'];
+const paymentModes = ['Cash', 'UPI', 'Cheque', 'Bank Transfer', 'Other'];
 
 export default function Maintenance({ user }) {
   const [records, setRecords] = useState([]);
@@ -26,7 +27,7 @@ export default function Maintenance({ user }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [editId, setEditId] = useState(null);
-  const [form, setForm] = useState({ member_id: '', month: '', year: '', amount: '', status: '', proofs: [] });
+  const [form, setForm] = useState({ member_id: '', month: '', year: '', amount: '', description: '', status: '', payment_mode: '', proofs: [] });
   const [fileInputKey, setFileInputKey] = useState(Date.now());
   const [generate, setGenerate] = useState({ month: '', year: '', amount: '' });
   const [searchTerm, setSearchTerm] = useState('');
@@ -73,6 +74,8 @@ export default function Maintenance({ user }) {
       data.append('member_id', form.member_id);
       data.append('month_year', month_year);
       data.append('amount', form.amount);
+      data.append('payment_mode', form.payment_mode || '');
+      data.append('description', form.description || '');
       data.append('status', form.status);
       files.forEach((file) => data.append('proofs', file));
 
@@ -81,7 +84,7 @@ export default function Maintenance({ user }) {
       } else {
         await api.post('/maintenance', data, { headers: { 'Content-Type': 'multipart/form-data' } });
       }
-      setForm({ member_id: '', month: '', year: '', amount: '', status: '', proofs: [] });
+      setForm({ member_id: '', month: '', year: '', amount: '', description: '', status: '', payment_mode: '', proofs: [] });
       setEditId(null);
       setFileInputKey(Date.now());
       setIsModalOpen(false);
@@ -118,7 +121,7 @@ export default function Maintenance({ user }) {
   const startEdit = (record) => {
     const [year, month] = record.month_year.split('-');
     setEditId(record.id);
-    setForm({ member_id: record.member_id, month, year, amount: record.amount, status: record.status || '', proofs: [] });
+    setForm({ member_id: record.member_id, month, year, amount: record.amount, description: record.description || '', status: record.status || '', payment_mode: record.payment_mode || '', proofs: [] });
     setFileInputKey(Date.now());
     setIsModalOpen(true);
   };
@@ -135,14 +138,14 @@ export default function Maintenance({ user }) {
 
   const cancelEdit = () => {
     setEditId(null);
-    setForm({ member_id: '', month: '', year: '', amount: '', status: '', proofs: [] });
+    setForm({ member_id: '', month: '', year: '', amount: '', description: '', status: '', payment_mode: '', proofs: [] });
     setFileInputKey(Date.now());
     setIsModalOpen(false);
   };
 
   const exportCsv = () => {
-    const headers = ['Month', 'Member', 'House No', 'Amount', 'Status', 'Paid Date'];
-    const rows = filteredRecords.map((record) => [record.month_year, record.member_name, record.flat_no, record.amount, record.status, formatDateTime(record.paid_date)]);
+    const headers = ['Month', 'Member', 'House No', 'Amount', 'Description', 'Status', 'Payment Mode', 'Paid Date'];
+    const rows = filteredRecords.map((record) => [record.month_year, record.member_name, record.flat_no, record.amount, record.description || '-', record.status, record.payment_mode || '-', formatDateTime(record.paid_date)]);
     const summaryRows = [
       ['Total records', summary.total],
       ['Filtered', summary.filtered],
@@ -154,8 +157,8 @@ export default function Maintenance({ user }) {
   };
 
   const exportPdf = () => {
-    const headers = ['Month', 'Member', 'House No', 'Amount', 'Status', 'Paid Date'];
-    const rows = filteredRecords.map((record) => [record.month_year, record.member_name, record.flat_no, record.amount, record.status, formatDateTime(record.paid_date)]);
+    const headers = ['Month', 'Member', 'House No', 'Amount', 'Description', 'Status', 'Payment Mode', 'Paid Date'];
+    const rows = filteredRecords.map((record) => [record.month_year, record.member_name, record.flat_no, record.amount, record.description || '-', record.status, record.payment_mode || '-', formatDateTime(record.paid_date)]);
     const summaryRows = [
       ['Total records', summary.total],
       ['Filtered', summary.filtered],
@@ -262,6 +265,19 @@ export default function Maintenance({ user }) {
                       <option value="Unpaid">Unpaid</option>
                       <option value="Paid">Paid</option>
                     </select>
+                  </div>
+                  <div className="col-12 col-md-4">
+                    <label className="form-label">Payment Mode</label>
+                    <select className="form-select" value={form.payment_mode} onChange={(e) => setForm({ ...form, payment_mode: e.target.value })}>
+                      <option value="">Select Payment Mode</option>
+                      {paymentModes.map((m) => (
+                        <option key={m} value={m}>{m}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="col-12">
+                    <label className="form-label">Description</label>
+                    <textarea className="form-control" rows="2" value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
                   </div>
                   <div className="col-12">
                     <label className="form-label">Proof Images</label>
@@ -379,7 +395,9 @@ export default function Maintenance({ user }) {
                     <th>Member</th>
                     <th>House No</th>
                     <th>Amount</th>
+                    <th>Description</th>
                     <th>Status</th>
+                    <th>Payment Mode</th>
                     <th>Paid Date</th>
                     <th>Proofs</th>
                     {user.role === 'admin' && <th>Actions</th>}
@@ -393,11 +411,13 @@ export default function Maintenance({ user }) {
                       <td>{record.member_name}</td>
                       <td>{record.flat_no}</td>
                       <td>{record.amount}</td>
+                      <td>{record.description || '-'}</td>
                       <td>
                         <span className={record.status === 'Paid' ? 'text-success opacity-75' : 'text-danger opacity-75'}>
                           {record.status === 'Paid' ? '✔️' : '❌'}
                         </span>
                       </td>
+                      <td>{record.payment_mode || '-'}</td>
                       <td>{record.paid_date ? formatDateTime(record.paid_date) : '-'}</td>
                       <td>
                         {record.proofs && record.proofs.length > 0
