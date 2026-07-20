@@ -116,6 +116,13 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+      <div className="row g-3 mt-4 justify-content-center">
+        <div className="col-12 col-md-8 col-xl-6">
+          <div className="dashboard-logo-wrapper py-4 dashboard-logo-card">
+            <img src="/logo1.png" alt="Society Logo" className="dashboard-logo-large" />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
