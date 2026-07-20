@@ -123,6 +123,16 @@ export default function Maintenance({ user }) {
     setIsModalOpen(true);
   };
 
+  // const togglePaymentStatus = async (record) => {
+  //   try {
+  //     const newStatus = record.status === 'Paid' ? 'Unpaid' : 'Paid';
+  //     await api.put(`/maintenance/${record.id}`, { status: newStatus });
+  //     loadData();
+  //   } catch (err) {
+  //     setError(err.response?.data?.error || 'Unable to update payment status');
+  //   }
+  // };
+
   const cancelEdit = () => {
     setEditId(null);
     setForm({ member_id: '', month: '', year: '', amount: '', status: '', proofs: [] });
@@ -400,6 +410,12 @@ export default function Maintenance({ user }) {
                       </td>
                       {user.role === 'admin' && (
                         <td>
+                          {/* <button
+                            className={`btn btn-sm ${record.status === 'Paid' ? 'btn-outline-danger' : 'btn-outline-success'} me-2 maintenance-status-btn`}
+                            onClick={() => togglePaymentStatus(record)}
+                          >
+                            {record.status === 'Paid' ? 'Mark Unpaid' : 'Mark Paid'}
+                          </button> */}
                           <button className="btn btn-sm btn-outline-secondary me-2" onClick={() => startEdit(record)}>Edit</button>
                           <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(record.id)}>Delete</button>
                         </td>

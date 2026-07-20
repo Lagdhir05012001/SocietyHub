@@ -27,6 +27,34 @@ body {
   padding: 3px;
 }
 
+.dashboard-logo-large {
+  /* width: 200px; */
+  height: 200px;
+  object-fit: contain;
+  border-radius: 0;
+  background: transparent;
+  padding: 0;
+  display: inline-block;
+}
+
+.dashboard-logo-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.dashboard-logo-card {
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.maintenance-status-btn {
+  min-width: 100px;
+  width: 100px;
+  text-align: center;
+}
+
 .navbar-nav {
   gap: 0.25rem;
 }
