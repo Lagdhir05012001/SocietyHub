@@ -53,7 +53,8 @@ export function downloadCsv(filename, headers, rows, summaryRows = []) {
   URL.revokeObjectURL(link.href);
 }
 
-export function downloadPdf(filename, title, headers, rows, summaryRows = []) {
+export function downloadPdf(filename, title, headers, rows, summaryRows = [], options = {}) {
+  const { statusColumnIndex = null, tables = [] } = options;
   const doc = new jsPDF();
   const margin = 14;
   doc.setFontSize(14);
@@ -76,6 +77,36 @@ export function downloadPdf(filename, title, headers, rows, summaryRows = []) {
     theme: 'grid',
     styles: { fontSize: 10 },
     headStyles: { fillColor: [41, 128, 185] },
+    didParseCell: (data) => {
+      if (data.row.section === 'body' && statusColumnIndex !== null) {
+        console.log( data.row.raw[statusColumnIndex])
+        const statusValue = data.row.raw[statusColumnIndex];
+        if (statusValue === 'Present') {
+          data.cell.styles.fillColor = [220, 255, 220];
+          data.cell.styles.textColor = [0, 100, 0];
+        } else if (statusValue === 'Absent') {
+          data.cell.styles.fillColor = [255, 220, 220];
+          data.cell.styles.textColor = [155, 0, 0];
+        }
+      }
+    },
+  });
+
+  let nextStartY = doc.lastAutoTable.finalY + 10;
+  tables.forEach((table) => {
+    if (!table || !table.headers || !table.rows) return;
+    doc.setFontSize(12);
+    doc.text(table.title || 'Summary', margin, nextStartY);
+    nextStartY += 6;
+    autoTable(doc, {
+      startY: nextStartY,
+      head: [table.headers],
+      body: table.rows,
+      theme: 'grid',
+      styles: { fontSize: 10 },
+      headStyles: { fillColor: [41, 128, 185] },
+    });
+    nextStartY = doc.lastAutoTable.finalY + 10;
   });
 
   doc.save(filename);
