@@ -103,8 +103,12 @@ export default function Attendance({ user }) {
     const summaryRows = [
       ['Total records', summary.total],
       ['Filtered', summary.filtered],
-      ['Present', summary.present],
-      ['Absent', summary.absent],
+      ['Present count', summary.present],
+      ['Absent count', summary.absent],
+      [],
+      ['Worker-wise attendance summary', ''],
+      ['Worker', 'Type', 'Present', 'Absent'],
+      ...workerSummary.map((item) => [item.worker_name, item.worker_type, item.present, item.absent]),
     ];
     downloadCsv('attendance.csv', headers, rows, summaryRows);
   };
@@ -115,10 +119,22 @@ export default function Attendance({ user }) {
     const summaryRows = [
       ['Total records', summary.total],
       ['Filtered', summary.filtered],
-      ['Present', summary.present],
-      ['Absent', summary.absent],
+      ['Present count', summary.present],
+      ['Absent count', summary.absent],
     ];
-    downloadPdf('attendance.pdf', 'Attendance Records', headers, rows, summaryRows);
+    const workerSummaryTable = {
+      title: 'Worker-wise Attendance Summary',
+      headers: ['Worker', 'Type', 'Present', 'Absent'],
+      rows: workerSummary.map((item) => [item.worker_name, item.worker_type, item.present, item.absent]),
+    };
+    downloadPdf(
+      'attendance.pdf',
+      'Attendance Records',
+      headers,
+      rows,
+      summaryRows,
+      { statusColumnIndex: 3, tables: [workerSummaryTable] }
+    );
   };
 
   const filteredAttendance = attendance.filter((record) => {
@@ -141,6 +157,24 @@ export default function Attendance({ user }) {
     present: presentCount,
     absent: absentCount,
   };
+
+  const workerSummary = Object.values(filteredAttendance.reduce((acc, record) => {
+    const key = `${record.worker_name}__${record.worker_type}`;
+    if (!acc[key]) {
+      acc[key] = {
+        worker_name: record.worker_name,
+        worker_type: record.worker_type,
+        present: 0,
+        absent: 0,
+      };
+    }
+    if (record.status === 'Present') {
+      acc[key].present += 1;
+    } else if (record.status === 'Absent') {
+      acc[key].absent += 1;
+    }
+    return acc;
+  }, {})).sort((a, b) => a.worker_name.localeCompare(b.worker_name));
 
   return (
     <div>
