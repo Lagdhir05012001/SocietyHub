@@ -33,6 +33,7 @@ export default function Attendance({ user }) {
   const [workers, setWorkers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [formError, setFormError] = useState('');
   const [form, setForm] = useState({ worker_id: '', date: '', status: '' });
   const [editId, setEditId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
@@ -60,6 +61,7 @@ export default function Attendance({ user }) {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError('');
+    setFormError('');
     try {
       if (editId) {
         await api.put(`/attendance/${editId}`, form);
@@ -71,7 +73,7 @@ export default function Attendance({ user }) {
       setIsModalOpen(false);
       loadData();
     } catch (err) {
-      setError(err.response?.data?.error || 'Unable to save attendance');
+      setFormError(err.response?.data?.error || 'Unable to save attendance');
     }
   };
 
@@ -83,6 +85,7 @@ export default function Attendance({ user }) {
 
   const cancelEdit = () => {
     setEditId(null);
+    setFormError('');
     setForm({ worker_id: '', date: '', status: '' });
     setIsModalOpen(false);
   };
@@ -214,6 +217,7 @@ export default function Attendance({ user }) {
               </div>
               <div className="modal-body">
                 <form onSubmit={handleSubmit}>
+                {formError && <div className="alert alert-danger mb-3">{formError}</div>}
               <div className="row g-3">
                 <div className="col-md-4">
                   <label className="form-label">Worker</label>

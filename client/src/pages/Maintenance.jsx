@@ -26,6 +26,8 @@ export default function Maintenance({ user }) {
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [formError, setFormError] = useState('');
+  const [generateError, setGenerateError] = useState('');
   const [editId, setEditId] = useState(null);
   const [form, setForm] = useState({ member_id: '', month: '', year: '', amount: '', description: '', status: '', payment_mode: '', proofs: [] });
   const [fileInputKey, setFileInputKey] = useState(Date.now());
@@ -61,6 +63,7 @@ export default function Maintenance({ user }) {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError('');
+    setFormError('');
     try {
       const files = Array.from(form.proofs || []);
       const allowedTypes = ['image/png', 'image/jpeg'];
@@ -90,13 +93,14 @@ export default function Maintenance({ user }) {
       setIsModalOpen(false);
       loadData();
     } catch (err) {
-      setError(err.response?.data?.error || 'Unable to create maintenance record');
+      setFormError(err.response?.data?.error || 'Unable to create maintenance record');
     }
   };
 
   const handleGenerate = async (event) => {
     event.preventDefault();
     setError('');
+    setGenerateError('');
     try {
       const month_year = buildMonthYear(generate.month, generate.year);
       await api.post('/maintenance/generate', { month_year, amount: generate.amount });
@@ -104,7 +108,7 @@ export default function Maintenance({ user }) {
       setIsGenerateModalOpen(false);
       loadData();
     } catch (err) {
-      setError(err.response?.data?.error || 'Unable to generate maintenance');
+      setGenerateError(err.response?.data?.error || 'Unable to generate maintenance');
     }
   };
 
@@ -147,6 +151,7 @@ export default function Maintenance({ user }) {
 
   const cancelEdit = () => {
     setEditId(null);
+    setFormError('');
     setForm({ member_id: '', month: '', year: '', amount: '', description: '', status: '', payment_mode: '', proofs: [] });
     setFileInputKey(Date.now());
     setIsModalOpen(false);
@@ -233,6 +238,7 @@ export default function Maintenance({ user }) {
               </div>
               <div className="modal-body">
                 <form onSubmit={handleSubmit}>
+                {formError && <div className="alert alert-danger mb-3">{formError}</div>}
                 <div className="row g-3">
                   <div className="col-12 col-md-4">
                     <label className="form-label">Member</label>
@@ -314,6 +320,7 @@ export default function Maintenance({ user }) {
             </div>
             <div className="modal-body">
               <form onSubmit={handleGenerate}>
+                {generateError && <div className="alert alert-danger mb-3">{generateError}</div>}
                 <div className="row g-3">
                   <div className="col-12">
                     <label className="form-label">Month</label>
