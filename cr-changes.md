@@ -1,0 +1,16 @@
+- Add Logo – Done
+- Display Worker Type on Dashboard – Done
+- Generate PDF in Table Format – Done
+- Display Dashboard Data Year-wise – Done
+- Set Default Status Filter to "Select Status" for Absent/Present – Done
+- Set Default Year Dropdown to "Select Year" in Worker Attendance Filter – Done
+- Set Default Year Dropdown to "Select Year" in Maintenance Filter – Done
+- Add Serial Number (Sr. No.) to All Lists – Done
+- Display Summary in Expense, Maintenance, and Attendance CSV/PDF Exports – Done
+- Add Show/Hide Button for Password Field – Done
+- If the token has expired, the user should be redirected to the login page. - Done
+
+- In expense we allow mulitple upload but not displaying while edit but display leave blank if for existing - Done
+- In maintenace we need impment multi upload functtionality and allow edit, but display leave blank if for existing - Done
+- Do not display existing file in the both while editing. We have already created table to store the images named maintenance_proofs. - Done
+- Make sure whenver it add/edit the images it stored the record one time only - Done
