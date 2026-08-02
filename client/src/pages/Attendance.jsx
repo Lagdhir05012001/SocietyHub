@@ -324,6 +324,11 @@ export default function Attendance({ user }) {
                       )}
                     </tr>
                   ))}
+                  {displayedAttendance.length === 0 && (
+                    <tr>
+                      <td colSpan={user.role === 'admin' ? 6 : 5} className="text-center py-3">No records found.</td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>

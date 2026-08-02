@@ -281,7 +281,7 @@ export default function Tharav({ user }) {
                   ))}
                   {displayedRecords.length === 0 && (
                     <tr>
-                      <td colSpan={user.role === 'admin' ? 5 : 4} className="text-center py-3">No records found.</td>
+                      <td colSpan={user.role === 'admin' ? 6 : 5} className="text-center py-3">No records found.</td>
                     </tr>
                   )}
                 </tbody>

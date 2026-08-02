@@ -80,6 +80,11 @@ export default function Dashboard() {
                         <td>{expense.amount}</td>
                       </tr>
                     ))}
+                    {(!stats.recentExpenses || stats.recentExpenses.length === 0) && (
+                      <tr>
+                        <td colSpan="3" className="text-center py-3">No records found.</td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -109,6 +114,11 @@ export default function Dashboard() {
                         <td>{record.status}</td>
                       </tr>
                     ))}
+                    {(!stats.recentAttendance || stats.recentAttendance.length === 0) && (
+                      <tr>
+                        <td colSpan="4" className="text-center py-3">No records found.</td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>

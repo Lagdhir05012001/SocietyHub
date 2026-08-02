@@ -454,6 +454,11 @@ export default function Maintenance({ user }) {
                       )}
                     </tr>
                   ))}
+                  {displayedRecords.length === 0 && (
+                    <tr>
+                      <td colSpan={user.role === 'admin' ? 11 : 10} className="text-center py-3">No records found.</td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>
