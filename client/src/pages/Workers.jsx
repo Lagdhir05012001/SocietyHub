@@ -248,6 +248,11 @@ export default function Workers({ user }) {
                       )}
                     </tr>
                   ))}
+                  {displayedWorkers.length === 0 && (
+                    <tr>
+                      <td colSpan={user.role === 'admin' ? 7 : 6} className="text-center py-3">No records found.</td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>

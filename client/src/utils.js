@@ -111,3 +111,13 @@ export function downloadPdf(filename, title, headers, rows, summaryRows = [], op
 
   doc.save(filename);
 }
+
+export function downloadBlob(blob, filename) {
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.setAttribute('download', filename);
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(link.href);
+}

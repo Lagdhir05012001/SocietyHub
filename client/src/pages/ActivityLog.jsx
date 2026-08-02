@@ -107,6 +107,11 @@ export default function ActivityLog() {
                       <td>{log.details}</td>
                     </tr>
                   ))}
+                  {displayedLogs.length === 0 && (
+                    <tr>
+                      <td colSpan="4" className="text-center py-3">No records found.</td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>

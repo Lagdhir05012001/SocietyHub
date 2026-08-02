@@ -1,6 +1,7 @@
 require('dotenv').config();
 const express = require('express');
 const path = require('path');
+const fs = require('fs');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const multer = require('multer');
@@ -35,6 +36,57 @@ const uploadPdf = multer({
 app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+app.get('/download/expense-proof/:id', verifyToken, async (req, res) => {
+  try {
+    const [proof] = await query('SELECT filename, original_filename FROM expense_proofs WHERE id = ?', [req.params.id]);
+    if (!proof) {
+      return res.status(404).json({ error: 'Proof not found' });
+    }
+    const filePath = path.join(__dirname, 'uploads', proof.filename);
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'File not found' });
+    }
+    res.download(filePath, proof.original_filename || proof.filename);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Unable to download proof' });
+  }
+});
+
+app.get('/download/maintenance-proof/:id', verifyToken, async (req, res) => {
+  try {
+    const [proof] = await query('SELECT filename, original_filename FROM maintenance_proofs WHERE id = ?', [req.params.id]);
+    if (!proof) {
+      return res.status(404).json({ error: 'Proof not found' });
+    }
+    const filePath = path.join(__dirname, 'uploads', proof.filename);
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'File not found' });
+    }
+    res.download(filePath, proof.original_filename || proof.filename);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Unable to download proof' });
+  }
+});
+
+app.get('/download/tharav/:id', verifyToken, async (req, res) => {
+  try {
+    const [record] = await query('SELECT pdf_filename, pdf_original_filename FROM tharav WHERE id = ?', [req.params.id]);
+    if (!record) {
+      return res.status(404).json({ error: 'Tharav record not found' });
+    }
+    const filePath = path.join(__dirname, 'uploads', record.pdf_filename);
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'File not found' });
+    }
+    res.download(filePath, record.pdf_original_filename || record.pdf_filename);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Unable to download Tharav file' });
+  }
+});
 
 async function query(sql, params = []) {
   const [rows] = await pool.execute(sql, params);
@@ -420,12 +472,21 @@ app.delete('/attendance/:id', verifyToken, requireAdmin, async (req, res) => {
 app.get('/expenses', verifyToken, async (req, res) => {
   try {
     const expenses = await query(
-      'SELECT e.id, e.category, e.expense_date, e.amount, e.description, e.created_at, GROUP_CONCAT(p.filename) AS proofs FROM expenses e LEFT JOIN expense_proofs p ON e.id = p.expense_id GROUP BY e.id, e.category, e.expense_date, e.amount, e.description, e.created_at ORDER BY e.expense_date DESC, e.created_at DESC'
+        'SELECT e.id, e.category, e.expense_date, e.amount, e.description, e.created_at, GROUP_CONCAT(p.id SEPARATOR "||") AS proof_ids, GROUP_CONCAT(p.filename SEPARATOR "||") AS proofs, GROUP_CONCAT(p.original_filename SEPARATOR "||") AS proof_names FROM expenses e LEFT JOIN expense_proofs p ON e.id = p.expense_id GROUP BY e.id, e.category, e.expense_date, e.amount, e.description, e.created_at ORDER BY e.expense_date DESC, e.created_at DESC'
     );
-    res.json(expenses.map((row) => ({
-      ...row,
-      proofs: row.proofs ? row.proofs.split(',') : [],
-    })));
+    res.json(expenses.map((row) => {
+        const ids = row.proof_ids ? row.proof_ids.split('||') : [];
+        const filenames = row.proofs ? row.proofs.split('||') : [];
+        const originalNames = row.proof_names ? row.proof_names.split('||') : [];
+        return {
+          ...row,
+          proofs: ids.map((id, index) => ({
+            id: Number(id),
+            filename: filenames[index] || '',
+            original_filename: originalNames[index] || filenames[index] || '',
+          })),
+        };
+      }));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Unable to load expenses' });
@@ -445,11 +506,9 @@ app.post('/expenses', verifyToken, requireAdmin, upload.array('proofs', 5), asyn
     );
     const expenseId = result.insertId;
     if (req.files && req.files.length) {
-      // const inserts = req.files.map((file) => [expenseId, file.filename]);
-      // await query('INSERT INTO expense_proofs (expense_id, filename) VALUES ? ', [inserts]);
       for (const file of req.files) {
-        await query('INSERT INTO expense_proofs (expense_id, filename) VALUES (?, ?)',
-          [expenseId, file.filename]);
+        await query('INSERT INTO expense_proofs (expense_id, filename, original_filename) VALUES (?, ?, ?)',
+          [expenseId, file.filename, file.originalname]);
       }
     }
     await logActivity(req.user.id, req.user.name, 'Create expense', `Created expense ${category} on ${expense_date} amount ${amountValue}`);
@@ -495,7 +554,7 @@ app.put('/expenses/:id', verifyToken, requireAdmin, upload.array('proofs', 5), a
     if (req.files && req.files.length) {
       await query('DELETE FROM expense_proofs WHERE expense_id = ?', [req.params.id]);
       for (const file of req.files) {
-        await query('INSERT INTO expense_proofs (expense_id, filename) VALUES (?, ?)', [req.params.id, file.filename]);
+        await query('INSERT INTO expense_proofs (expense_id, filename, original_filename) VALUES (?, ?, ?)', [req.params.id, file.filename, file.originalname]);
       }
     }
     await logActivity(req.user.id, req.user.name, 'Update expense', `Updated expense id ${req.params.id}`);
@@ -521,12 +580,21 @@ app.delete('/expenses/:id', verifyToken, requireAdmin, async (req, res) => {
 app.get('/maintenance', verifyToken, async (req, res) => {
   try {
     const records = await query(
-      'SELECT m.id, m.member_id, u.name AS member_name, u.flat_no, m.month_year, m.amount, m.description, m.status, m.payment_mode, m.paid_date, m.created_at, GROUP_CONCAT(p.filename) AS proofs FROM maintenance m JOIN users u ON m.member_id = u.id LEFT JOIN maintenance_proofs p ON m.id = p.maintenance_id GROUP BY m.id, m.member_id, u.name, u.flat_no, m.month_year, m.amount, m.description, m.status, m.payment_mode, m.paid_date, m.created_at ORDER BY m.month_year DESC, m.created_at DESC'
+        'SELECT m.id, m.member_id, u.name AS member_name, u.flat_no, m.month_year, m.amount, m.description, m.status, m.payment_mode, m.paid_date, m.created_at, GROUP_CONCAT(p.id SEPARATOR "||") AS proof_ids, GROUP_CONCAT(p.filename SEPARATOR "||") AS proofs, GROUP_CONCAT(p.original_filename SEPARATOR "||") AS proof_names FROM maintenance m JOIN users u ON m.member_id = u.id LEFT JOIN maintenance_proofs p ON m.id = p.maintenance_id GROUP BY m.id, m.member_id, u.name, u.flat_no, m.month_year, m.amount, m.description, m.status, m.payment_mode, m.paid_date, m.created_at ORDER BY m.month_year DESC, m.created_at DESC'
     );
-    res.json(records.map((row) => ({
-      ...row,
-      proofs: row.proofs ? row.proofs.split(',') : [],
-    })));
+    res.json(records.map((row) => {
+        const ids = row.proof_ids ? row.proof_ids.split('||') : [];
+        const filenames = row.proofs ? row.proofs.split('||') : [];
+        const originalNames = row.proof_names ? row.proof_names.split('||') : [];
+        return {
+          ...row,
+          proofs: ids.map((id, index) => ({
+            id: Number(id),
+            filename: filenames[index] || '',
+            original_filename: originalNames[index] || filenames[index] || '',
+          })),
+        };
+      }));
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Unable to load maintenance records' });
@@ -557,7 +625,7 @@ app.post('/maintenance', verifyToken, requireAdmin, upload.array('proofs', 5), a
     const maintenanceId = result.insertId;
     if (req.files && req.files.length) {
       for (const file of req.files) {
-        await query('INSERT INTO maintenance_proofs (maintenance_id, filename) VALUES (?, ?)', [maintenanceId, file.filename]);
+        await query('INSERT INTO maintenance_proofs (maintenance_id, filename, original_filename) VALUES (?, ?, ?)', [maintenanceId, file.filename, file.originalname]);
       }
     }
     await logActivity(req.user.id, req.user.name, 'Create maintenance', `Created maintenance record for member ${member_id} for ${month_year}`);
@@ -613,7 +681,7 @@ app.put('/maintenance/:id', verifyToken, requireAdmin, upload.array('proofs', 5)
     if (req.files && req.files.length) {
       await query('DELETE FROM maintenance_proofs WHERE maintenance_id = ?', [req.params.id]);
       for (const file of req.files) {
-        await query('INSERT INTO maintenance_proofs (maintenance_id, filename) VALUES (?, ?)', [req.params.id, file.filename]);
+        await query('INSERT INTO maintenance_proofs (maintenance_id, filename, original_filename) VALUES (?, ?, ?)', [req.params.id, file.filename, file.originalname]);
       }
     }
     await logActivity(req.user.id, req.user.name, 'Update maintenance', `Updated maintenance id ${req.params.id}`);
@@ -657,7 +725,7 @@ app.post('/maintenance/generate', verifyToken, requireAdmin, async (req, res) =>
 app.get('/tharav', verifyToken, async (req, res) => {
   try {
     const records = await query(
-      'SELECT id, tharav_number, tharav_date, description, pdf_filename, created_at FROM tharav ORDER BY created_at DESC'
+        'SELECT id, tharav_number, tharav_date, description, pdf_filename, pdf_original_filename, created_at FROM tharav ORDER BY created_at DESC'
     );
     res.json(records);
   } catch (error) {
@@ -678,8 +746,8 @@ app.post('/tharav', verifyToken, requireAdmin, uploadPdf.single('document'), asy
       return res.status(409).json({ error: 'Tharav number must be unique' });
     }
     await query(
-      'INSERT INTO tharav (tharav_number, tharav_date, description, pdf_filename) VALUES (?, ?, ?, ?)',
-      [tharav_number, tharav_date, description || '', pdfFilename]
+      'INSERT INTO tharav (tharav_number, tharav_date, description, pdf_filename, pdf_original_filename) VALUES (?, ?, ?, ?, ?)',
+      [tharav_number, tharav_date, description || '', pdfFilename, req.file.originalname]
     );
     await logActivity(req.user.id, req.user.name, 'Create tharav', `Created tharav ${tharav_number}`);
     res.status(201).json({ message: 'Tharav record created' });
@@ -714,6 +782,8 @@ app.put('/tharav/:id', verifyToken, requireAdmin, uploadPdf.single('document'), 
     if (pdfFilename) {
       fields.push('pdf_filename = ?');
       values.push(pdfFilename);
+      fields.push('pdf_original_filename = ?');
+      values.push(req.file.originalname);
     }
     if (!fields.length) {
       return res.status(400).json({ error: 'No updates provided' });
