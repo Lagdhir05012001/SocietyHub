@@ -120,25 +120,23 @@ export default function Tharav({ user }) {
   const baseUrl = api.defaults.baseURL || '';
 
   const exportCsv = () => {
-    const headers = ['Sr No', 'Tharav Number', 'Date', 'Description', 'PDF Document'];
+    const headers = ['Sr No', 'Tharav Number', 'Date', 'Description'];
     const rows = filteredRecords.map((record, index) => [
       index + 1,
       record.tharav_number,
       formatDate(record.tharav_date),
       record.description || '',
-      record.pdf_filename || '',
     ]);
     downloadCsv('tharav.csv', headers, rows, [['Total records', summary.total], ['Filtered', summary.filtered]]);
   };
 
   const exportPdf = () => {
-    const headers = ['Sr No', 'Tharav Number', 'Date', 'Description', 'PDF Document'];
+    const headers = ['Sr No', 'Tharav Number', 'Date', 'Description'];
     const rows = filteredRecords.map((record, index) => [
       index + 1,
       record.tharav_number,
       formatDate(record.tharav_date),
       record.description || '',
-      record.pdf_filename || '',
     ]);
     downloadPdf('tharav.pdf', 'Tharav Records', headers, rows, [['Total records', summary.total], ['Filtered', summary.filtered]]);
   };
