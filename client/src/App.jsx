@@ -11,6 +11,7 @@ import Attendance from './pages/Attendance';
 import Expenses from './pages/Expenses';
 import Maintenance from './pages/Maintenance';
 import ActivityLog from './pages/ActivityLog';
+import Tharav from './pages/Tharav';
 
 function App() {
   const [user, setUser] = useState(() => {
@@ -68,6 +69,7 @@ function App() {
           <Route path="/attendance" element={requireAuth(<Attendance user={user} />)} />
           <Route path="/expenses" element={requireAuth(<Expenses user={user} />)} />
           <Route path="/maintenance" element={requireAuth(<Maintenance user={user} />)} />
+          <Route path="/tharav" element={requireAuth(<Tharav user={user} />)} />
           <Route path="/activity-log" element={requireAuth(user?.role === 'admin' ? <ActivityLog /> : <Navigate to="/dashboard" replace />)} />
           <Route path="/login" element={<Login onLogin={login} />} />
           <Route path="/register" element={<Register onRegister={login} />} />

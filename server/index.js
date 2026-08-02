@@ -21,6 +21,17 @@ const upload = multer({
   },
 });
 
+const uploadPdf = multer({
+  dest: path.join(__dirname, 'uploads'),
+  fileFilter(req, file, cb) {
+    if (file.mimetype === 'application/pdf') {
+      cb(null, true);
+    } else {
+      cb(new Error('Only PDF files are allowed'));
+    }
+  },
+});
+
 app.use(cors());
 app.use(express.json());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
@@ -643,12 +654,100 @@ app.post('/maintenance/generate', verifyToken, requireAdmin, async (req, res) =>
   }
 });
 
+app.get('/tharav', verifyToken, async (req, res) => {
+  try {
+    const records = await query(
+      'SELECT id, tharav_number, tharav_date, description, pdf_filename, created_at FROM tharav ORDER BY created_at DESC'
+    );
+    res.json(records);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Unable to load tharav records' });
+  }
+});
+
+app.post('/tharav', verifyToken, requireAdmin, uploadPdf.single('document'), async (req, res) => {
+  try {
+    const { tharav_number, tharav_date, description } = req.body;
+    const pdfFilename = req.file ? req.file.filename : null;
+    if (!tharav_number || !tharav_date || !pdfFilename) {
+      return res.status(400).json({ error: 'Tharav number, date and PDF document are required' });
+    }
+    const [existing] = await query('SELECT id FROM tharav WHERE tharav_number = ?', [tharav_number]);
+    if (existing) {
+      return res.status(409).json({ error: 'Tharav number must be unique' });
+    }
+    await query(
+      'INSERT INTO tharav (tharav_number, tharav_date, description, pdf_filename) VALUES (?, ?, ?, ?)',
+      [tharav_number, tharav_date, description || '', pdfFilename]
+    );
+    await logActivity(req.user.id, req.user.name, 'Create tharav', `Created tharav ${tharav_number}`);
+    res.status(201).json({ message: 'Tharav record created' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Unable to create tharav record' });
+  }
+});
+
+app.put('/tharav/:id', verifyToken, requireAdmin, uploadPdf.single('document'), async (req, res) => {
+  try {
+    const { tharav_number, tharav_date, description } = req.body;
+    const pdfFilename = req.file ? req.file.filename : null;
+    const fields = [];
+    const values = [];
+    if (tharav_number) {
+      const [existing] = await query('SELECT id FROM tharav WHERE tharav_number = ? AND id != ?', [tharav_number, req.params.id]);
+      if (existing) {
+        return res.status(409).json({ error: 'Tharav number must be unique' });
+      }
+      fields.push('tharav_number = ?');
+      values.push(tharav_number);
+    }
+    if (tharav_date) {
+      fields.push('tharav_date = ?');
+      values.push(tharav_date);
+    }
+    if (description !== undefined) {
+      fields.push('description = ?');
+      values.push(description || '');
+    }
+    if (pdfFilename) {
+      fields.push('pdf_filename = ?');
+      values.push(pdfFilename);
+    }
+    if (!fields.length) {
+      return res.status(400).json({ error: 'No updates provided' });
+    }
+    values.push(req.params.id);
+    await query(`UPDATE tharav SET ${fields.join(', ')} WHERE id = ?`, values);
+    await logActivity(req.user.id, req.user.name, 'Update tharav', `Updated tharav id ${req.params.id}`);
+    res.json({ message: 'Tharav record updated' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Unable to update tharav record' });
+  }
+});
+
+app.delete('/tharav/:id', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    await query('DELETE FROM tharav WHERE id = ?', [req.params.id]);
+    await logActivity(req.user.id, req.user.name, 'Delete tharav', `Deleted tharav id ${req.params.id}`);
+    res.json({ message: 'Tharav record deleted' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Unable to delete tharav record' });
+  }
+});
+
 app.use((err, req, res, next) => {
-  if (err && err.message && err.message.includes('Only PNG and JPG images are allowed')) {
+  if (err && err.message && (err.message.includes('Only PNG and JPG images are allowed') || err.message.includes('Only PDF files are allowed'))) {
     return res.status(400).json({ error: err.message });
   }
   if (err && err instanceof multer.MulterError) {
     return res.status(400).json({ error: err.message });
+  }
+  if (err && err.message && (err.message.includes('HeaderParser') || err.message.includes('multipart') || err.message.includes('Unexpected end of multipart data'))) {
+    return res.status(400).json({ error: 'Invalid file upload request. Please make sure the form is submitted with a valid file and content type.' });
   }
   next(err);
 });

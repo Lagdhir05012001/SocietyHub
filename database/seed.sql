@@ -30,3 +30,6 @@ INSERT INTO maintenance (member_id, month_year, amount, status, paid_date) VALUE
 INSERT INTO activity_logs (user_id, user_name, action, details) VALUES
   (1, 'Admin One', 'Login', 'Admin One logged in'),
   (1, 'Admin One', 'Create member', 'Created Member One with email member1@societyhub.com');
+
+INSERT INTO tharav (tharav_number, tharav_date, description, pdf_filename) VALUES
+  ('TH-001', '2026-07-15', 'Sample document for the first tharav entry', 'tharav_TH-001.pdf');
