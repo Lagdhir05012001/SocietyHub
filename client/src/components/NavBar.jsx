@@ -47,6 +47,9 @@ export default function NavBar({ user, onLogout }) {
                 <li className="nav-item">
                   <NavLink className={linkClass} to="/maintenance" onClick={closeMenu}>Maintenance</NavLink>
                 </li>
+                <li className="nav-item">
+                  <NavLink className={linkClass} to="/tharav" onClick={closeMenu}>Tharav</NavLink>
+                </li>
                 {user.role === 'admin' && (
                   <li className="nav-item">
                     <NavLink className={linkClass} to="/activity-log" onClick={closeMenu}>Activity Log</NavLink>
