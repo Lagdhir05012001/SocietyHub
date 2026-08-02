@@ -72,7 +72,7 @@ CREATE TABLE IF NOT EXISTS maintenance_proofs (
 
 CREATE TABLE IF NOT EXISTS tharav (
   id INT AUTO_INCREMENT PRIMARY KEY,
-  tharav_number VARCHAR(120) NOT NULL,
+  tharav_number VARCHAR(120) NOT NULL UNIQUE,
   tharav_date DATE NOT NULL,
   description TEXT,
   pdf_filename VARCHAR(255) NOT NULL,

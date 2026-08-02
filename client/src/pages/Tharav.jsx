@@ -9,6 +9,7 @@ export default function Tharav({ user }) {
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [formError, setFormError] = useState('');
   const [form, setForm] = useState({ tharav_number: '', tharav_date: '', description: '' });
   const [documentFile, setDocumentFile] = useState(null);
   const [documentKey, setDocumentKey] = useState(Date.now());
@@ -31,6 +32,7 @@ export default function Tharav({ user }) {
 
   const resetForm = () => {
     setEditId(null);
+    setFormError('');
     setForm({ tharav_number: '', tharav_date: '', description: '' });
     setDocumentFile(null);
     setDocumentKey(Date.now());
@@ -49,6 +51,7 @@ export default function Tharav({ user }) {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError('');
+    setFormError('');
     try {
       if (documentFile && documentFile.type !== 'application/pdf') {
         setError('Only PDF files are allowed for Tharav uploads.');
@@ -70,7 +73,7 @@ export default function Tharav({ user }) {
       closeModal();
       loadRecords();
     } catch (err) {
-      setError(err.response?.data?.error || 'Unable to save tharav record');
+      setFormError(err.response?.data?.error || 'Unable to save tharav record');
     }
   };
 
@@ -167,6 +170,7 @@ export default function Tharav({ user }) {
               </div>
               <div className="modal-body">
                 <form onSubmit={handleSubmit}>
+                  {formError && <div className="alert alert-danger mb-3">{formError}</div>}
                   <div className="row g-3">
                     <div className="col-12 col-md-6">
                       <label className="form-label">Tharav Number</label>

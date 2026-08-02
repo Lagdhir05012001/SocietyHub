@@ -20,6 +20,7 @@ export default function Expenses({ user }) {
   const [expenses, setExpenses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [formError, setFormError] = useState('');
   const [form, setForm] = useState({ category: '', expense_date: '', amount: '', description: '', proofs: [] });
   const [editId, setEditId] = useState(null);
   const [fileInputKey, setFileInputKey] = useState(Date.now());
@@ -44,6 +45,7 @@ export default function Expenses({ user }) {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError('');
+    setFormError('');
     try {
       const files = Array.from(form.proofs || []);
       const allowedTypes = ['image/png', 'image/jpeg'];
@@ -70,7 +72,7 @@ export default function Expenses({ user }) {
       setIsModalOpen(false);
       loadExpenses();
     } catch (err) {
-      setError(err.response?.data?.error || 'Unable to save expense');
+      setFormError(err.response?.data?.error || 'Unable to save expense');
     }
   };
 
@@ -107,6 +109,7 @@ export default function Expenses({ user }) {
 
   const cancelEdit = () => {
     setEditId(null);
+    setFormError('');
     setForm({ category: '', expense_date: '', amount: '', description: '', proofs: [] });
     setFileInputKey(Date.now());
     setIsModalOpen(false);
@@ -178,6 +181,7 @@ export default function Expenses({ user }) {
               </div>
               <div className="modal-body">
                 <form onSubmit={handleSubmit}>
+                {formError && <div className="alert alert-danger mb-3">{formError}</div>}
               <div className="row g-3">
                 <div className="col-md-4">
                   <label className="form-label">Category</label>

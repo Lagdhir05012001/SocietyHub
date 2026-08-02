@@ -9,6 +9,7 @@ export default function Workers({ user }) {
   const [workers, setWorkers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [formError, setFormError] = useState('');
   const [form, setForm] = useState({ name: '', phone: '', type: '', salary: '' });
   const [profileFile, setProfileFile] = useState(null);
   const [profileKey, setProfileKey] = useState(Date.now());
@@ -19,6 +20,7 @@ export default function Workers({ user }) {
 
   const closeModal = () => {
     setEditId(null);
+    setFormError('');
     setForm({ name: '', phone: '', type: '', salary: '' });
     setProfileFile(null);
     setProfileKey(Date.now());
@@ -40,6 +42,7 @@ export default function Workers({ user }) {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError('');
+    setFormError('');
     try {
       const formData = new FormData();
       formData.append('name', form.name);
@@ -62,7 +65,7 @@ export default function Workers({ user }) {
       setIsModalOpen(false);
       loadWorkers();
     } catch (err) {
-      setError(err.response?.data?.error || 'Unable to save worker');
+      setFormError(err.response?.data?.error || 'Unable to save worker');
     }
   };
 
@@ -145,6 +148,7 @@ export default function Workers({ user }) {
               </div>
               <div className="modal-body">
                 <form onSubmit={handleSubmit}>
+                {formError && <div className="alert alert-danger mb-3">{formError}</div>}
               <div className="row g-3">
                 <div className="col-md-6">
                   <label className="form-label">Name</label>

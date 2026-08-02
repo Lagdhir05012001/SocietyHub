@@ -9,6 +9,7 @@ export default function Members({ user }) {
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [formError, setFormError] = useState('');
   const [form, setForm] = useState({ name: '', email: '', phone: '', flat_no: '', password: '' });
   const [showPassword, setShowPassword] = useState(false);
   const [profileFile, setProfileFile] = useState(null);
@@ -20,6 +21,7 @@ export default function Members({ user }) {
 
   const closeModal = () => {
     setEditId(null);
+    setFormError('');
     setForm({ name: '', email: '', phone: '', flat_no: '', password: '' });
     setProfileFile(null);
     setProfileKey(Date.now());
@@ -41,6 +43,7 @@ export default function Members({ user }) {
   const handleSubmit = async (event) => {
     event.preventDefault();
     setError('');
+    setFormError('');
     try {
       const formData = new FormData();
       formData.append('name', form.name);
@@ -66,7 +69,7 @@ export default function Members({ user }) {
       setIsModalOpen(false);
       loadMembers();
     } catch (err) {
-      setError(err.response?.data?.error || 'Unable to save member');
+      setFormError(err.response?.data?.error || 'Unable to save member');
     }
   };
 
@@ -149,6 +152,7 @@ export default function Members({ user }) {
               </div>
               <div className="modal-body">
                 <form onSubmit={handleSubmit}>
+                {formError && <div className="alert alert-danger mb-3">{formError}</div>}
               <div className="row g-3">
                 <div className="col-md-6">
                   <label className="form-label">Name</label>
