@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api';
-import { downloadCsv, downloadPdf, formatDate } from '../utils';
+import { downloadBlob, downloadCsv, downloadPdf, formatDate } from '../utils';
 import Pagination from '../components/Pagination';
 
 const PAGE_SIZE = 10;
@@ -81,6 +81,15 @@ export default function Expenses({ user }) {
       loadExpenses();
     } catch {
       setError('Unable to delete expense');
+    }
+  };
+
+  const handleDownloadProof = async (proof) => {
+    try {
+      const response = await api.get(`/download/expense-proof/${proof.id}`, { responseType: 'blob' });
+      downloadBlob(response.data, proof.original_filename || proof.filename);
+    } catch {
+      setError('Unable to download proof');
     }
   };
 
@@ -281,9 +290,15 @@ export default function Expenses({ user }) {
                       <td>{expense.description}</td>
                       <td>
                         {expense.proofs && expense.proofs.length > 0
-                          ? expense.proofs.map((proof, i) => (
-                            <div key={i}><a href={`${api.defaults.baseURL}/uploads/${proof}`} target="_blank" rel="noreferrer">Download</a></div>
-                          ))
+                          ? expense.proofs.map((proof, i) => {
+                            const filename = typeof proof === 'string' ? proof : proof.filename;
+                            const displayName = typeof proof === 'string' ? proof : proof.original_filename || proof.filename;
+                            return (
+                              <div key={i}>
+                                <button type="button" className="btn btn-sm btn-outline-secondary mb-1" onClick={() => handleDownloadProof(proof)}>{displayName}</button>
+                              </div>
+                            );
+                          })
                           : '-'}
                       </td>
                       {user.role === 'admin' && (

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api';
-import { downloadCsv, downloadPdf, formatDateTime } from '../utils';
+import { downloadBlob, downloadCsv, downloadPdf, formatDateTime } from '../utils';
 import Pagination from '../components/Pagination';
 
 const PAGE_SIZE = 10;
@@ -115,6 +115,15 @@ export default function Maintenance({ user }) {
       loadData();
     } catch {
       setError('Unable to delete maintenance record');
+    }
+  };
+
+  const handleDownloadProof = async (proof) => {
+    try {
+      const response = await api.get(`/download/maintenance-proof/${proof.id}`, { responseType: 'blob' });
+      downloadBlob(response.data, proof.original_filename || proof.filename);
+    } catch {
+      setError('Unable to download proof');
     }
   };
 
@@ -421,11 +430,14 @@ export default function Maintenance({ user }) {
                       <td>{record.paid_date ? formatDateTime(record.paid_date) : '-'}</td>
                       <td>
                         {record.proofs && record.proofs.length > 0
-                          ? record.proofs.map((proof, i) => (
-                            <div key={i}>
-                              <a href={`${api.defaults.baseURL}/uploads/${proof}`} target="_blank" rel="noreferrer">Download</a>
-                            </div>
-                          ))
+                          ? record.proofs.map((proof, i) => {
+                              const displayName = typeof proof === 'string' ? proof : proof.original_filename || proof.filename;
+                              return (
+                                <div key={i}>
+                                  <button type="button" className="btn btn-sm btn-outline-secondary mb-1" onClick={() => handleDownloadProof(proof)}>{displayName}</button>
+                                </div>
+                              );
+                            })
                           : '-'}
                       </td>
                       {user.role === 'admin' && (

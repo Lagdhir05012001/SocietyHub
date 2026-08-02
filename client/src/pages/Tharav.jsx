@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api';
-import { formatDate, downloadCsv, downloadPdf } from '../utils';
+import { downloadBlob, formatDate, downloadCsv, downloadPdf } from '../utils';
 import Pagination from '../components/Pagination';
 
 const PAGE_SIZE = 10;
@@ -89,6 +89,15 @@ export default function Tharav({ user }) {
       loadRecords();
     } catch {
       setError('Unable to delete tharav record');
+    }
+  };
+
+  const handleDownloadTharav = async (record) => {
+    try {
+      const response = await api.get(`/download/tharav/${record.id}`, { responseType: 'blob' });
+      downloadBlob(response.data, record.pdf_original_filename || record.pdf_filename);
+    } catch {
+      setError('Unable to download Tharav file');
     }
   };
 
@@ -252,13 +261,12 @@ export default function Tharav({ user }) {
                       <td>{record.description || '-'}</td>
                       <td>
                         {record.pdf_filename ? (
-                           <a
+                           <button
+                             type="button"
                              className="btn btn-sm btn-outline-primary me-2 d-inline-flex align-items-center justify-content-center"
                              style={{ minWidth: '90px' }}
-                             href={`${baseUrl}/uploads/${record.pdf_filename}`}
-                             target="_blank"
-                             rel="noreferrer"
-                           >Download</a>
+                             onClick={() => handleDownloadTharav(record)}
+                           >Download</button>
                         ) : (
                           '-'
                         )}

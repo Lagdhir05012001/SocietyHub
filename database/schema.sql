@@ -45,6 +45,7 @@ CREATE TABLE IF NOT EXISTS expense_proofs (
   id INT AUTO_INCREMENT PRIMARY KEY,
   expense_id INT NOT NULL,
   filename VARCHAR(255) NOT NULL,
+  original_filename VARCHAR(255) DEFAULT NULL,
   FOREIGN KEY (expense_id) REFERENCES expenses(id) ON DELETE CASCADE
 );
 
@@ -65,6 +66,7 @@ CREATE TABLE IF NOT EXISTS maintenance_proofs (
   id INT AUTO_INCREMENT PRIMARY KEY,
   maintenance_id INT NOT NULL,
   filename VARCHAR(255) NOT NULL,
+  original_filename VARCHAR(255) DEFAULT NULL,
   FOREIGN KEY (maintenance_id) REFERENCES maintenance(id) ON DELETE CASCADE
 );
 
@@ -74,6 +76,7 @@ CREATE TABLE IF NOT EXISTS tharav (
   tharav_date DATE NOT NULL,
   description TEXT,
   pdf_filename VARCHAR(255) NOT NULL,
+  pdf_original_filename VARCHAR(255) DEFAULT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
