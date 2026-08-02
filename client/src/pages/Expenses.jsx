@@ -295,7 +295,7 @@ export default function Expenses({ user }) {
                             const displayName = typeof proof === 'string' ? proof : proof.original_filename || proof.filename;
                             return (
                               <div key={i}>
-                                <button type="button" className="btn btn-sm btn-outline-secondary mb-1" onClick={() => handleDownloadProof(proof)}>{displayName}</button>
+                                <button type="button" className="btn btn-sm btn-outline-primary mb-1 text-primary hover-text-white" onClick={() => handleDownloadProof(proof)}>{displayName}</button>
                               </div>
                             );
                           })

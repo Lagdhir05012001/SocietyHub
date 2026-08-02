@@ -266,7 +266,7 @@ export default function Tharav({ user }) {
                              className="btn btn-sm btn-outline-primary me-2 d-inline-flex align-items-center justify-content-center"
                              style={{ minWidth: '90px' }}
                              onClick={() => handleDownloadTharav(record)}
-                           >Download</button>
+                           >{record.pdf_original_filename || record.pdf_filename}</button>
                         ) : (
                           '-'
                         )}

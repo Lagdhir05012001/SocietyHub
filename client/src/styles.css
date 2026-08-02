@@ -55,6 +55,11 @@ body {
   text-align: center;
 }
 
+.btn-outline-primary.hover-text-white:hover,
+.btn-outline-primary.hover-text-white:focus {
+  color: #fff !important;
+}
+
 .navbar-nav {
   gap: 0.25rem;
 }
