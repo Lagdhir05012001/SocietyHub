@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import api from '../api';
 import { downloadCsv, downloadPdf, formatDate } from '../utils';
 import Pagination from '../components/Pagination';
+import AutoDismissAlert from '../components/AutoDismissAlert';
 
 const months = [
   { value: '', label: 'Select Month' },
@@ -211,7 +212,7 @@ export default function Attendance({ user }) {
       <span className="badge bg-success">Present: {summary.present}</span>
         <span className="badge bg-danger">Absent: {summary.absent}</span>
       </div>
-      {error && <div className="alert alert-danger">{error}</div>}
+      <AutoDismissAlert message={error} onClose={() => setError('')} />
       {user.role === 'admin' && isModalOpen && (
         <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
           <div className="modal-dialog modal-lg">
@@ -222,7 +223,7 @@ export default function Attendance({ user }) {
               </div>
               <div className="modal-body">
                 <form onSubmit={handleSubmit}>
-                {formError && <div className="alert alert-danger mb-3">{formError}</div>}
+                <AutoDismissAlert message={formError} onClose={() => setFormError('')} className="alert alert-danger mb-3" />
               <div className="row g-3">
                 <div className="col-md-3">
                   <label className="form-label">Worker</label>

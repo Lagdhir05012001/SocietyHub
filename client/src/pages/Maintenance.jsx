@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api';
+import AutoDismissAlert from '../components/AutoDismissAlert';
 import { downloadBlob, downloadCsv, downloadPdf, formatDateTime } from '../utils';
 import Pagination from '../components/Pagination';
 
@@ -227,7 +228,7 @@ export default function Maintenance({ user }) {
       <span className="badge bg-info text-dark">Paid amount: ₹{summary.paidAmount.toFixed(2)}</span>
         <span className="badge bg-warning text-dark">Unpaid amount: ₹{summary.unpaidAmount.toFixed(2)}</span>
       </div>
-      {error && <div className="alert alert-danger">{error}</div>}
+      <AutoDismissAlert message={error} onClose={() => setError('')} />
       {user.role === 'admin' && isModalOpen && (
         <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)', overflowY: 'auto' }}>
           <div className="modal-dialog modal-lg">
@@ -238,7 +239,7 @@ export default function Maintenance({ user }) {
               </div>
               <div className="modal-body">
                 <form onSubmit={handleSubmit}>
-                {formError && <div className="alert alert-danger mb-3">{formError}</div>}
+                <AutoDismissAlert message={formError} onClose={() => setFormError('')} className="alert alert-danger mb-3" />
                 <div className="row g-3">
                   <div className="col-12 col-md-4">
                     <label className="form-label">Member</label>
@@ -320,7 +321,7 @@ export default function Maintenance({ user }) {
             </div>
             <div className="modal-body">
               <form onSubmit={handleGenerate}>
-                {generateError && <div className="alert alert-danger mb-3">{generateError}</div>}
+                <AutoDismissAlert message={generateError} onClose={() => setGenerateError('')} className="alert alert-danger mb-3" />
                 <div className="row g-3">
                   <div className="col-12">
                     <label className="form-label">Month</label>

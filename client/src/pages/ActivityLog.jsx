@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api';
+import AutoDismissAlert from '../components/AutoDismissAlert';
 import { downloadCsv, downloadPdf, formatDateTime } from '../utils';
 import Pagination from '../components/Pagination';
 
@@ -64,7 +65,7 @@ export default function ActivityLog() {
         <span className="badge bg-secondary">Filtered: {summary.filtered}</span>
       </div>
 
-      {error && <div className="alert alert-danger">{error}</div>}
+      <AutoDismissAlert message={error} onClose={() => setError('')} />
 
       <div className="card mb-3 shadow-sm">
         <div className="card-body">

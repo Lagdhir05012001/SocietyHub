@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../api';
+import AutoDismissAlert from '../components/AutoDismissAlert';
 
 export default function Register({ onRegister }) {
   const [name, setName] = useState('');
@@ -39,7 +40,7 @@ export default function Register({ onRegister }) {
         <div className="card shadow-sm auth-card">
           <div className="card-body">
             <h3 className="card-title mb-4">Register as Member</h3>
-            {error && <div className="alert alert-danger">{error}</div>}
+            <AutoDismissAlert message={error} onClose={() => setError('')} />
             <form onSubmit={handleSubmit}>
               <div className="mb-3">
                 <label className="form-label">Full Name</label>

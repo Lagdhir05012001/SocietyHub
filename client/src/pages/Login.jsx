@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../api';
+import AutoDismissAlert from '../components/AutoDismissAlert';
 
 export default function Login({ onLogin }) {
   const [email, setEmail] = useState('');
@@ -27,7 +28,7 @@ export default function Login({ onLogin }) {
         <div className="card shadow-sm auth-card">
           <div className="card-body">
             <h3 className="card-title mb-4">Login</h3>
-            {error && <div className="alert alert-danger">{error}</div>}
+            <AutoDismissAlert message={error} onClose={() => setError('')} />
             <form onSubmit={handleSubmit}>
               <div className="mb-3">
                 <label className="form-label">Email</label>

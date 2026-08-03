@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api';
+import AutoDismissAlert from '../components/AutoDismissAlert';
 import { formatDate } from '../utils';
 
 export default function Dashboard() {
@@ -24,7 +25,7 @@ export default function Dashboard() {
   }
 
   if (error) {
-    return <div className="alert alert-danger">{error}</div>;
+    return <AutoDismissAlert message={error} onClose={() => setError('')} />;
   }
 
   return (
