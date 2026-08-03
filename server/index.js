@@ -112,6 +112,27 @@ function parsePositiveNumber(value) {
   return parsed;
 }
 
+function normalizeWorkerType(type) {
+  return String(type || '').trim().toLowerCase();
+}
+
+function resolveAttendanceShift(workerType, shift) {
+  const normalizedType = normalizeWorkerType(workerType);
+  const normalizedShift = String(shift || 'day').trim().toLowerCase();
+
+  if (normalizedType === 'security') {
+    if (normalizedShift !== 'day' && normalizedShift !== 'night') {
+      return null;
+    }
+    return normalizedShift;
+  }
+
+  if (normalizedShift !== 'day') {
+    return null;
+  }
+  return 'day';
+}
+
 app.post('/auth/register', upload.single('profile'), async (req, res) => {
   try {
     const { name, email, password, phone, flat_no } = req.body;
@@ -177,7 +198,7 @@ app.get('/dashboard', verifyToken, async (req, res) => {
       'SELECT e.id, e.category, e.expense_date, e.amount, e.description FROM expenses e ORDER BY e.expense_date DESC LIMIT 5'
     );
     const recentAttendance = await query(
-      'SELECT a.id, w.name AS worker_name, w.type AS worker_type, a.date, a.status FROM attendance a JOIN workers w ON a.worker_id = w.id ORDER BY a.date DESC LIMIT 5'
+      'SELECT a.id, w.name AS worker_name, w.type AS worker_type, a.date, a.shift, a.status FROM attendance a JOIN workers w ON a.worker_id = w.id ORDER BY a.date DESC, a.created_at DESC LIMIT 5'
     );
 
     res.json({
@@ -404,7 +425,7 @@ app.delete('/workers/:id', verifyToken, requireAdmin, async (req, res) => {
 app.get('/attendance', verifyToken, async (req, res) => {
   try {
     const attendance = await query(
-      'SELECT a.id, a.worker_id, w.name AS worker_name, w.type AS worker_type, a.date, a.status FROM attendance a JOIN workers w ON a.worker_id = w.id ORDER BY a.date DESC, a.created_at DESC'
+      'SELECT a.id, a.worker_id, w.name AS worker_name, w.type AS worker_type, a.date, a.shift, a.status FROM attendance a JOIN workers w ON a.worker_id = w.id ORDER BY a.date DESC, a.created_at DESC'
     );
     res.json(attendance);
   } catch (error) {
@@ -415,12 +436,28 @@ app.get('/attendance', verifyToken, async (req, res) => {
 
 app.post('/attendance', verifyToken, requireAdmin, async (req, res) => {
   try {
-    const { worker_id, date, status } = req.body;
+    const { worker_id, date, status, shift } = req.body;
     if (!worker_id || !date || !status) {
       return res.status(400).json({ error: 'Worker, date and status are required' });
     }
-    await query('INSERT INTO attendance (worker_id, date, status) VALUES (?, ?, ?)', [worker_id, date, status]);
-    await logActivity(req.user.id, req.user.name, 'Create attendance', `Recorded attendance for worker ${worker_id} on ${date} as ${status}`);
+
+    const [worker] = await query('SELECT id, type FROM workers WHERE id = ?', [worker_id]);
+    if (!worker) {
+      return res.status(404).json({ error: 'Worker not found' });
+    }
+
+    const resolvedShift = resolveAttendanceShift(worker.type, shift);
+    if (resolvedShift === null) {
+      return res.status(400).json({ error: 'Shift must be day for regular workers and day/night for security workers' });
+    }
+
+    const [existing] = await query('SELECT id FROM attendance WHERE worker_id = ? AND date = ? AND shift = ?', [worker_id, date, resolvedShift]);
+    if (existing) {
+      return res.status(409).json({ error: 'Attendance for this worker, date and shift already exists' });
+    }
+
+    await query('INSERT INTO attendance (worker_id, date, shift, status) VALUES (?, ?, ?, ?)', [worker_id, date, resolvedShift, status]);
+    await logActivity(req.user.id, req.user.name, 'Create attendance', `Recorded ${resolvedShift} shift attendance for worker ${worker_id} on ${date} as ${status}`);
     res.status(201).json({ message: 'Attendance recorded' });
   } catch (error) {
     console.error(error);
@@ -430,10 +467,20 @@ app.post('/attendance', verifyToken, requireAdmin, async (req, res) => {
 
 app.put('/attendance/:id', verifyToken, requireAdmin, async (req, res) => {
   try {
-    const { worker_id, date, status } = req.body;
+    const { worker_id, date, status, shift } = req.body;
     const fields = [];
     const values = [];
+
+    const [existingRecord] = await query('SELECT worker_id, date, shift FROM attendance WHERE id = ?', [req.params.id]);
+    if (!existingRecord) {
+      return res.status(404).json({ error: 'Attendance record not found' });
+    }
+
     if (worker_id) {
+      const [worker] = await query('SELECT id, type FROM workers WHERE id = ?', [worker_id]);
+      if (!worker) {
+        return res.status(404).json({ error: 'Worker not found' });
+      }
       fields.push('worker_id = ?');
       values.push(worker_id);
     }
@@ -445,9 +492,35 @@ app.put('/attendance/:id', verifyToken, requireAdmin, async (req, res) => {
       fields.push('status = ?');
       values.push(status);
     }
+
+    let resolvedShift = existingRecord.shift;
+    if (shift !== undefined) {
+      const workerType = worker_id
+        ? (await query('SELECT type FROM workers WHERE id = ?', [worker_id]))[0]?.type
+        : (await query('SELECT type FROM workers WHERE id = ?', [existingRecord.worker_id]))[0]?.type;
+      const nextShift = resolveAttendanceShift(workerType, shift);
+      if (nextShift === null) {
+        return res.status(400).json({ error: 'Shift must be day for regular workers and day/night for security workers' });
+      }
+      resolvedShift = nextShift;
+      fields.push('shift = ?');
+      values.push(resolvedShift);
+    }
+
     if (!fields.length) {
       return res.status(400).json({ error: 'No updates provided' });
     }
+
+    if (worker_id || date || shift !== undefined) {
+      const targetWorkerId = worker_id || existingRecord.worker_id;
+      const targetDate = date || existingRecord.date;
+      const targetShift = resolvedShift;
+      const [duplicate] = await query('SELECT id FROM attendance WHERE worker_id = ? AND date = ? AND shift = ? AND id != ?', [targetWorkerId, targetDate, targetShift, req.params.id]);
+      if (duplicate) {
+        return res.status(409).json({ error: 'Attendance for this worker, date and shift already exists' });
+      }
+    }
+
     values.push(req.params.id);
     await query(`UPDATE attendance SET ${fields.join(', ')} WHERE id = ?`, values);
     await logActivity(req.user.id, req.user.name, 'Update attendance', `Updated attendance id ${req.params.id}`);

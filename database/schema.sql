@@ -27,9 +27,11 @@ CREATE TABLE IF NOT EXISTS attendance (
   id INT AUTO_INCREMENT PRIMARY KEY,
   worker_id INT NOT NULL,
   date DATE NOT NULL,
+  shift ENUM('day', 'night') NOT NULL DEFAULT 'day',
   status ENUM('Present', 'Absent') NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (worker_id) REFERENCES workers(id) ON DELETE CASCADE
+  FOREIGN KEY (worker_id) REFERENCES workers(id) ON DELETE CASCADE,
+  UNIQUE KEY uq_attendance_worker_date_shift (worker_id, date, shift)
 );
 
 CREATE TABLE IF NOT EXISTS expenses (

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api';
+import AutoDismissAlert from '../components/AutoDismissAlert';
 import { formatDate } from '../utils';
 
 export default function Dashboard() {
@@ -24,7 +25,7 @@ export default function Dashboard() {
   }
 
   if (error) {
-    return <div className="alert alert-danger">{error}</div>;
+    return <AutoDismissAlert message={error} onClose={() => setError('')} />;
   }
 
   return (
@@ -102,6 +103,7 @@ export default function Dashboard() {
                       <th>Date</th>
                       <th>Worker</th>
                       <th>Type</th>
+                      <th>Shift</th>
                       <th>Status</th>
                     </tr>
                   </thead>
@@ -111,12 +113,13 @@ export default function Dashboard() {
                         <td>{formatDate(record.date)}</td>
                         <td>{record.worker_name}</td>
                         <td>{record.worker_type}</td>
+                        <td>{record.shift === 'night' ? 'Night' : 'Day'}</td>
                         <td>{record.status}</td>
                       </tr>
                     ))}
                     {(!stats.recentAttendance || stats.recentAttendance.length === 0) && (
                       <tr>
-                        <td colSpan="4" className="text-center py-3">No records found.</td>
+                        <td colSpan="5" className="text-center py-3">No records found.</td>
                       </tr>
                     )}
                   </tbody>

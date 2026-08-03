@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import api from '../api';
 import { downloadCsv, downloadPdf, formatDate } from '../utils';
 import Pagination from '../components/Pagination';
+import AutoDismissAlert from '../components/AutoDismissAlert';
 
 const months = [
   { value: '', label: 'Select Month' },
@@ -34,7 +35,7 @@ export default function Attendance({ user }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [formError, setFormError] = useState('');
-  const [form, setForm] = useState({ worker_id: '', date: '', status: '' });
+  const [form, setForm] = useState({ worker_id: '', date: '', status: '', shift: 'day' });
   const [editId, setEditId] = useState(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -63,12 +64,17 @@ export default function Attendance({ user }) {
     setError('');
     setFormError('');
     try {
+      const selectedWorker = workers.find((worker) => String(worker.id) === String(form.worker_id));
+      const payload = {
+        ...form,
+        shift: selectedWorker?.type?.toLowerCase() === 'security' ? form.shift || 'day' : 'day',
+      };
       if (editId) {
-        await api.put(`/attendance/${editId}`, form);
+        await api.put(`/attendance/${editId}`, payload);
       } else {
-        await api.post('/attendance', form);
+        await api.post('/attendance', payload);
       }
-      setForm({ worker_id: '', date: '', status: '' });
+      setForm({ worker_id: '', date: '', status: '', shift: 'day' });
       setEditId(null);
       setIsModalOpen(false);
       loadData();
@@ -79,14 +85,14 @@ export default function Attendance({ user }) {
 
   const startEdit = (record) => {
     setEditId(record.id);
-    setForm({ worker_id: record.worker_id, date: record.date, status: record.status });
+    setForm({ worker_id: record.worker_id, date: record.date, status: record.status, shift: record.shift || 'day' });
     setIsModalOpen(true);
   };
 
   const cancelEdit = () => {
     setEditId(null);
     setFormError('');
-    setForm({ worker_id: '', date: '', status: '' });
+    setForm({ worker_id: '', date: '', status: '', shift: 'day' });
     setIsModalOpen(false);
   };
 
@@ -101,8 +107,8 @@ export default function Attendance({ user }) {
   };
 
   const exportCsv = () => {
-    const headers = ['Date', 'Worker', 'Type', 'Status'];
-    const rows = filteredAttendance.map((record) => [formatDate(record.date), record.worker_name, record.worker_type, record.status]);
+    const headers = ['Date', 'Worker', 'Type', 'Shift', 'Status'];
+    const rows = filteredAttendance.map((record) => [formatDate(record.date), record.worker_name, record.worker_type, record.shift === 'night' ? 'Night' : 'Day', record.status]);
     const summaryRows = [
       ['Total records', summary.total],
       ['Filtered', summary.filtered],
@@ -117,8 +123,8 @@ export default function Attendance({ user }) {
   };
 
   const exportPdf = () => {
-    const headers = ['Date', 'Worker', 'Type', 'Status'];
-    const rows = filteredAttendance.map((record) => [formatDate(record.date), record.worker_name, record.worker_type, record.status]);
+    const headers = ['Date', 'Worker', 'Type', 'Shift', 'Status'];
+    const rows = filteredAttendance.map((record) => [formatDate(record.date), record.worker_name, record.worker_type, record.shift === 'night' ? 'Night' : 'Day', record.status]);
     const summaryRows = [
       ['Total records', summary.total],
       ['Filtered', summary.filtered],
@@ -136,7 +142,7 @@ export default function Attendance({ user }) {
       headers,
       rows,
       summaryRows,
-      { statusColumnIndex: 3, tables: [workerSummaryTable] }
+      { statusColumnIndex: 4, tables: [workerSummaryTable] }
     );
   };
 
@@ -189,7 +195,7 @@ export default function Attendance({ user }) {
             className="btn btn-primary"
             onClick={() => {
               setEditId(null);
-              setForm({ worker_id: '', date: '', status: '' });
+              setForm({ worker_id: '', date: '', status: '', shift: 'day' });
               setIsModalOpen(true);
             }}
           >
@@ -206,7 +212,7 @@ export default function Attendance({ user }) {
       <span className="badge bg-success">Present: {summary.present}</span>
         <span className="badge bg-danger">Absent: {summary.absent}</span>
       </div>
-      {error && <div className="alert alert-danger">{error}</div>}
+      <AutoDismissAlert message={error} onClose={() => setError('')} />
       {user.role === 'admin' && isModalOpen && (
         <div className="modal show d-block" tabIndex="-1" style={{ backgroundColor: 'rgba(0,0,0,0.5)' }}>
           <div className="modal-dialog modal-lg">
@@ -217,22 +223,43 @@ export default function Attendance({ user }) {
               </div>
               <div className="modal-body">
                 <form onSubmit={handleSubmit}>
-                {formError && <div className="alert alert-danger mb-3">{formError}</div>}
+                <AutoDismissAlert message={formError} onClose={() => setFormError('')} className="alert alert-danger mb-3" />
               <div className="row g-3">
-                <div className="col-md-4">
+                <div className="col-md-3">
                   <label className="form-label">Worker</label>
-                  <select className="form-select" value={form.worker_id} onChange={(e) => setForm({ ...form, worker_id: e.target.value })} required>
+                  <select
+                    className="form-select"
+                    value={form.worker_id}
+                    onChange={(e) => {
+                      const selectedWorker = workers.find((worker) => String(worker.id) === String(e.target.value));
+                      const nextShift = selectedWorker?.type?.toLowerCase() === 'security' ? (form.shift || 'day') : 'day';
+                      setForm({ ...form, worker_id: e.target.value, shift: nextShift });
+                    }}
+                    required
+                  >
                     <option value="">Select Worker</option>
                     {workers.map((worker) => (
                       <option key={worker.id} value={worker.id}>{worker.name}</option>
                     ))}
                   </select>
                 </div>
-                <div className="col-md-4">
+                <div className="col-md-3">
                   <label className="form-label">Date</label>
                   <input className="form-control" type="date" value={form.date} onChange={(e) => setForm({ ...form, date: e.target.value })} required />
                 </div>
-                <div className="col-md-4">
+                <div className="col-md-3">
+                  <label className="form-label">Shift</label>
+                  {workers.find((worker) => String(worker.id) === String(form.worker_id))?.type?.toLowerCase() === 'security' ? (
+                    <select className="form-select" value={form.shift} onChange={(e) => setForm({ ...form, shift: e.target.value })} required>
+                      <option value="">Select Shift</option>
+                      <option value="day">Day</option>
+                      <option value="night">Night</option>
+                    </select>
+                  ) : (
+                    <input className="form-control" value="Day" readOnly />
+                  )}
+                </div>
+                <div className="col-md-3">
                   <label className="form-label">Status</label>
                   <select className="form-select" value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })} required>
                     <option value="">Select Status</option>
@@ -304,6 +331,7 @@ export default function Attendance({ user }) {
                     <th>Date</th>
                     <th>Worker</th>
                     <th>Type</th>
+                    <th>Shift</th>
                     <th>Status</th>
                     {user.role === 'admin' && <th>Actions</th>}
                   </tr>
@@ -315,6 +343,7 @@ export default function Attendance({ user }) {
                       <td>{formatDate(record.date)}</td>
                       <td>{record.worker_name}</td>
                       <td>{record.worker_type}</td>
+                      <td>{record.shift === 'night' ? 'Night' : 'Day'}</td>
                       <td>
                         <span className={record.status === 'Present' ? 'text-success fw-semibold' : 'text-danger fw-semibold'}>
                           {record.status}
@@ -330,7 +359,7 @@ export default function Attendance({ user }) {
                   ))}
                   {displayedAttendance.length === 0 && (
                     <tr>
-                      <td colSpan={user.role === 'admin' ? 6 : 5} className="text-center py-3">No records found.</td>
+                      <td colSpan={user.role === 'admin' ? 7 : 6} className="text-center py-3">No records found.</td>
                     </tr>
                   )}
                 </tbody>
