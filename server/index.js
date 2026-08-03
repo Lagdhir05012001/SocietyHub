@@ -872,6 +872,99 @@ app.delete('/tharav/:id', verifyToken, requireAdmin, async (req, res) => {
   }
 });
 
+app.post('/society-corner', verifyToken, requireAdmin, uploadPdf.single('document'), async (req, res) => {
+  try {
+    const { file_name, document_date } = req.body;
+    const pdfFilename = req.file ? req.file.filename : null;
+    if (!file_name || !document_date || !pdfFilename) {
+      return res.status(400).json({ error: 'File name, date and PDF document are required' });
+    }
+    await query(
+      'INSERT INTO society_corner_documents (file_name, document_date, pdf_filename, pdf_original_filename) VALUES (?, ?, ?, ?)',
+      [file_name, document_date, pdfFilename, req.file.originalname]
+    );
+    res.status(201).json({ message: 'Document added' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Unable to add document' });
+  }
+});
+
+app.put('/society-corner/:id', verifyToken, requireAdmin, uploadPdf.single('document'), async (req, res) => {
+  try {
+    const { file_name, document_date } = req.body;
+    const pdfFilename = req.file ? req.file.filename : null;
+    const fields = [];
+    const values = [];
+
+    if (file_name) {
+      fields.push('file_name = ?');
+      values.push(file_name);
+    }
+    if (document_date) {
+      fields.push('document_date = ?');
+      values.push(document_date);
+    }
+    if (pdfFilename) {
+      fields.push('pdf_filename = ?');
+      values.push(pdfFilename);
+      fields.push('pdf_original_filename = ?');
+      values.push(req.file.originalname);
+    }
+
+    if (!fields.length) {
+      return res.status(400).json({ error: 'No updates provided' });
+    }
+
+    values.push(req.params.id);
+    await query(`UPDATE society_corner_documents SET ${fields.join(', ')} WHERE id = ?`, values);
+    res.json({ message: 'Document updated' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Unable to update document' });
+  }
+});
+
+app.delete('/society-corner/:id', verifyToken, requireAdmin, async (req, res) => {
+  try {
+    await query('DELETE FROM society_corner_documents WHERE id = ?', [req.params.id]);
+    res.json({ message: 'Document deleted' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Unable to delete document' });
+  }
+});
+
+
+app.get('/download/society-corner/:id', verifyToken, async (req, res) => {
+  try {
+    const [record] = await query('SELECT pdf_filename, pdf_original_filename FROM society_corner_documents WHERE id = ?', [req.params.id]);
+    if (!record) {
+      return res.status(404).json({ error: 'Document not found' });
+    }
+    const filePath = path.join(__dirname, 'uploads', record.pdf_filename);
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).json({ error: 'File not found' });
+    }
+    res.download(filePath, record.pdf_original_filename || record.pdf_filename);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Unable to download document' });
+  }
+});
+
+app.get('/society-corner', verifyToken, async (req, res) => {
+  try {
+    const records = await query(
+      'SELECT id, file_name, document_date, pdf_filename, pdf_original_filename, created_at FROM society_corner_documents ORDER BY document_date DESC, created_at DESC'
+    );
+    res.json(records);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Unable to load society corner documents' });
+  }
+});
+
 app.use((err, req, res, next) => {
   if (err && err.message && (err.message.includes('Only PNG and JPG images are allowed') || err.message.includes('Only PDF files are allowed'))) {
     return res.status(400).json({ error: err.message });

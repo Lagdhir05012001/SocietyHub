@@ -50,6 +50,9 @@ export default function NavBar({ user, onLogout }) {
                 <li className="nav-item">
                   <NavLink className={linkClass} to="/tharav" onClick={closeMenu}>Tharav</NavLink>
                 </li>
+                <li className="nav-item">
+                  <NavLink className={linkClass} to="/society-corner" onClick={closeMenu}>Society Corner</NavLink>
+                </li>
               </ul>
               <div className="d-flex align-items-center text-white me-3 my-2 my-lg-0">
                 {user.profile_image ? (
