@@ -28,6 +28,7 @@ export default function Maintenance({ user }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [formError, setFormError] = useState('');
+  const [uploadError, setUploadError] = useState('');
   const [generateError, setGenerateError] = useState('');
   const [editId, setEditId] = useState(null);
   const [form, setForm] = useState({ member_id: '', month: '', year: '', amount: '', description: '', status: '', payment_mode: '', proofs: [] });
@@ -70,9 +71,10 @@ export default function Maintenance({ user }) {
       const allowedTypes = ['image/png', 'image/jpeg'];
       const invalidFile = files.find((file) => !allowedTypes.includes(file.type));
       if (invalidFile) {
-        setError('Only PNG and JPG images are allowed for proof uploads.');
+        setUploadError('Only PNG and JPG images are allowed for proof uploads.');
         return;
       }
+      setUploadError('');
       const month_year = buildMonthYear(form.month, form.year);
       const data = new FormData();
       data.append('member_id', form.member_id);
@@ -90,6 +92,7 @@ export default function Maintenance({ user }) {
       }
       setForm({ member_id: '', month: '', year: '', amount: '', description: '', status: '', payment_mode: '', proofs: [] });
       setEditId(null);
+      setUploadError('');
       setFileInputKey(Date.now());
       setIsModalOpen(false);
       loadData();
@@ -153,6 +156,7 @@ export default function Maintenance({ user }) {
   const cancelEdit = () => {
     setEditId(null);
     setFormError('');
+    setUploadError('');
     setForm({ member_id: '', month: '', year: '', amount: '', description: '', status: '', payment_mode: '', proofs: [] });
     setFileInputKey(Date.now());
     setIsModalOpen(false);
@@ -297,7 +301,25 @@ export default function Maintenance({ user }) {
                   </div>
                   <div className="col-12">
                     <label className="form-label">Proof Images</label>
-                    <input key={fileInputKey} className="form-control" type="file" multiple accept=".png,.jpg,.jpeg" onChange={(e) => setForm({ ...form, proofs: e.target.files })} />
+                    <input
+                      key={fileInputKey}
+                      className="form-control"
+                      type="file"
+                      multiple
+                      accept=".png,.jpg,.jpeg"
+                      onChange={(e) => {
+                        const files = Array.from(e.target.files || []);
+                        const allowedTypes = ['image/png', 'image/jpeg'];
+                        const invalidFile = files.find((file) => !allowedTypes.includes(file.type));
+                        if (invalidFile) {
+                          setUploadError('Only PNG and JPG images are allowed for proof uploads.');
+                        } else {
+                          setUploadError('');
+                        }
+                        setForm({ ...form, proofs: e.target.files });
+                      }}
+                    />
+                    {uploadError && <div className="text-danger small mt-2">{uploadError}</div>}
                     {editId && <div className="form-text">Leave blank to keep existing proofs, or select new images to replace them.</div>}
                   </div>
                 </div>
