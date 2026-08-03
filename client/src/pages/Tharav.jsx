@@ -11,6 +11,7 @@ export default function Tharav({ user }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [formError, setFormError] = useState('');
+  const [uploadError, setUploadError] = useState('');
   const [form, setForm] = useState({ tharav_number: '', tharav_date: '', description: '' });
   const [documentFile, setDocumentFile] = useState(null);
   const [documentKey, setDocumentKey] = useState(Date.now());
@@ -34,6 +35,7 @@ export default function Tharav({ user }) {
   const resetForm = () => {
     setEditId(null);
     setFormError('');
+    setUploadError('');
     setForm({ tharav_number: '', tharav_date: '', description: '' });
     setDocumentFile(null);
     setDocumentKey(Date.now());
@@ -55,9 +57,10 @@ export default function Tharav({ user }) {
     setFormError('');
     try {
       if (documentFile && documentFile.type !== 'application/pdf') {
-        setError('Only PDF files are allowed for Tharav uploads.');
+        setUploadError('Only PDF files are allowed for Tharav uploads.');
         return;
       }
+      setUploadError('');
       const formData = new FormData();
       formData.append('tharav_number', form.tharav_number);
       formData.append('tharav_date', form.tharav_date);
@@ -208,9 +211,18 @@ export default function Tharav({ user }) {
                         className="form-control"
                         type="file"
                         accept="application/pdf"
-                        onChange={(e) => setDocumentFile(e.target.files[0] || null)}
+                        onChange={(e) => {
+                          const file = e.target.files[0] || null;
+                          if (file && file.type !== 'application/pdf') {
+                            setUploadError('Only PDF files are allowed for Tharav uploads.');
+                          } else {
+                            setUploadError('');
+                          }
+                          setDocumentFile(file);
+                        }}
                         required={!editId}
                       />
+                      {uploadError && <div className="text-danger small mt-2">{uploadError}</div>}
                       {editId && <small className="text-muted">Leave blank to keep current file</small>}
                     </div>
                   </div>
