@@ -35,10 +35,10 @@ CREATE TABLE IF NOT EXISTS attendance (
 );
 
 ALTER TABLE attendance
-  ADD COLUMN IF NOT EXISTS shift ENUM('day', 'night') NOT NULL DEFAULT 'day' AFTER date;
+  ADD COLUMN shift ENUM('day', 'night') NOT NULL DEFAULT 'day' AFTER date;
 
 ALTER TABLE attendance
-  ADD UNIQUE INDEX IF NOT EXISTS uq_attendance_worker_date_shift (worker_id, date, shift);
+  ADD UNIQUE INDEX uq_attendance_worker_date_shift (worker_id, date, shift);
 
 CREATE TABLE IF NOT EXISTS expenses (
   id INT AUTO_INCREMENT PRIMARY KEY,
