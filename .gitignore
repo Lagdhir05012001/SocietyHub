@@ -4,4 +4,3 @@ client/node_modules/
 server/uploads/
 client/dist/
 .env
-notes.txt
