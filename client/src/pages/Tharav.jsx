@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api';
 import AutoDismissAlert from '../components/AutoDismissAlert';
-import { downloadBlob, formatDate, downloadCsv, downloadPdf } from '../utils';
+import { downloadBlob } from '../utils';
 import Pagination from '../components/Pagination';
 
 const PAGE_SIZE = 10;
@@ -123,30 +123,6 @@ export default function Tharav({ user }) {
   };
   const baseUrl = api.defaults.baseURL || '';
 
-  const exportCsv = () => {
-    const headers = ['Sr No', 'Tharav Number', 'Date', 'Description', 'File Name'];
-    const rows = filteredRecords.map((record, index) => [
-      index + 1,
-      record.tharav_number,
-      formatDate(record.tharav_date),
-      record.description || '',
-      record.pdf_original_filename || record.pdf_filename || '',
-    ]);
-    downloadCsv('tharav.csv', headers, rows, [['Total records', summary.total], ['Filtered', summary.filtered]]);
-  };
-
-  const exportPdf = () => {
-    const headers = ['Sr No', 'Tharav Number', 'Date', 'Description', 'File Name'];
-    const rows = filteredRecords.map((record, index) => [
-      index + 1,
-      record.tharav_number,
-      formatDate(record.tharav_date),
-      record.description || '',
-      record.pdf_original_filename || record.pdf_filename || '',
-    ]);
-    downloadPdf('tharav.pdf', 'Tharav Records', headers, rows, [['Total records', summary.total], ['Filtered', summary.filtered]]);
-  };
-
   return (
     <div>
       <div className="page-header">
@@ -155,8 +131,6 @@ export default function Tharav({ user }) {
           {user.role === 'admin' && (
             <button className="btn btn-primary" onClick={openModal}>Add Tharav</button>
           )}
-          <button className="btn btn-outline-secondary" onClick={exportCsv}>Export CSV</button>
-          <button className="btn btn-outline-secondary" onClick={exportPdf}>Export PDF</button>
         </div>
       </div>
       <div className="summary-badges">
