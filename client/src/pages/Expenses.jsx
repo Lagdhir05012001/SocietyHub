@@ -6,14 +6,18 @@ import Pagination from '../components/Pagination';
 
 const PAGE_SIZE = 10;
 const categories = [
-  'Maintenance',
-  'Utilities',
-  'Staff Salary',
-  'Cleaning',
-  'Repairs',
-  'Garden',
-  'Security',
-  'Office Expenses',
+  'Road Cleaning Salary',
+  'Garden Cleaning Salary',
+  'Security Guard Salary',
+  'Electrical Maintenance',
+  'MGVCL Electricity Bill',
+  'Borewell & Motor Maintenance',
+  'New Purchases',
+  'Petty Cash Return',
+  'General Society Maintenance',
+  'Stationery',
+  'Street Light Maintenance',
+  'Tea & Snacks',
   'Other'
 ];
 
