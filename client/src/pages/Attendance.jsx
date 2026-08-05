@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api';
-import { downloadCsv, downloadPdf, formatDate } from '../utils';
+import { downloadPdf, formatDate } from '../utils';
 import Pagination from '../components/Pagination';
 import AutoDismissAlert from '../components/AutoDismissAlert';
 
@@ -106,22 +106,6 @@ export default function Attendance({ user }) {
     }
   };
 
-  const exportCsv = () => {
-    const headers = ['Date', 'Worker', 'Type', 'Shift', 'Status'];
-    const rows = filteredAttendance.map((record) => [formatDate(record.date), record.worker_name, record.worker_type, record.shift === 'night' ? 'Night' : 'Day', record.status]);
-    const summaryRows = [
-      ['Total records', summary.total],
-      ['Filtered', summary.filtered],
-      ['Present count', summary.present],
-      ['Absent count', summary.absent],
-      [],
-      ['Worker-wise attendance summary', ''],
-      ['Worker', 'Type', 'Present', 'Absent'],
-      ...workerSummary.map((item) => [item.worker_name, item.worker_type, item.present, item.absent]),
-    ];
-    downloadCsv('attendance.csv', headers, rows, summaryRows);
-  };
-
   const exportPdf = () => {
     const headers = ['Date', 'Worker', 'Type', 'Shift', 'Status'];
     const rows = filteredAttendance.map((record) => [formatDate(record.date), record.worker_name, record.worker_type, record.shift === 'night' ? 'Night' : 'Day', record.status]);
@@ -202,7 +186,6 @@ export default function Attendance({ user }) {
             Mark Attendance
           </button>
         )}
-        <button className="btn btn-outline-secondary" onClick={exportCsv}>Export CSV</button>
         <button className="btn btn-outline-secondary" onClick={exportPdf}>Export PDF</button>
       </div>
     </div>

@@ -1,6 +1,28 @@
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 
+const logoUrl = '/logo.png';
+
+function loadImageAsset(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      const canvas = document.createElement('canvas');
+      canvas.width = img.naturalWidth;
+      canvas.height = img.naturalHeight;
+      const context = canvas.getContext('2d');
+      context.drawImage(img, 0, 0);
+      resolve({
+        dataUrl: canvas.toDataURL('image/png'),
+        width: img.naturalWidth,
+        height: img.naturalHeight,
+      });
+    };
+    img.onerror = reject;
+    img.src = url;
+  });
+}
+
 export function formatDate(value) {
   if (!value) return '';
   const date = new Date(value);
@@ -53,12 +75,32 @@ export function downloadCsv(filename, headers, rows, summaryRows = []) {
   URL.revokeObjectURL(link.href);
 }
 
-export function downloadPdf(filename, title, headers, rows, summaryRows = [], options = {}) {
+export async function downloadPdf(filename, title, headers, rows, summaryRows = [], options = {}) {
   const { statusColumnIndex = null, tables = [] } = options;
   const doc = new jsPDF();
   const margin = 14;
+  const pageWidth = doc.internal.pageSize.getWidth();
+
+  let logoImage = null;
+  try {
+    logoImage = await loadImageAsset(logoUrl);
+  } catch (error) {
+    console.warn('Unable to load PDF logo:', error);
+  }
+
   doc.setFontSize(14);
   doc.text(title, margin, 20);
+
+  if (logoImage) {
+    const maxWidth = Math.min(34, pageWidth * 0.22);
+    const maxHeight = 20;
+    const imageRatio = Math.min(maxWidth / logoImage.width, maxHeight / logoImage.height);
+    const logoWidth = logoImage.width * imageRatio;
+    const logoHeight = logoImage.height * imageRatio;
+    const logoX = pageWidth - margin - logoWidth;
+    const logoY = 6;
+    doc.addImage(logoImage.dataUrl, 'PNG', logoX, logoY, logoWidth, logoHeight);
+  }
 
   let startY = 28;
   if (summaryRows.length > 0) {

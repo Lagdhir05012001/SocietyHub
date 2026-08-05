@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api';
 import AutoDismissAlert from '../components/AutoDismissAlert';
-import { downloadCsv, downloadPdf } from '../utils';
+import { downloadPdf } from '../utils';
 import Pagination from '../components/Pagination';
 
 const PAGE_SIZE = 10;
@@ -92,16 +92,6 @@ export default function Members({ user }) {
     }
   };
 
-  const exportCsv = () => {
-    const headers = ['Name', 'Email', 'Phone', 'House No'];
-    const rows = filteredMembers.map((member) => [member.name, member.email, member.phone || '', member.flat_no]);
-    const summaryRows = [
-      ['Total members', summary.total],
-      ['Filtered', summary.filtered],
-    ];
-    downloadCsv('members.csv', headers, rows, summaryRows);
-  };
-
   const exportPdf = () => {
     const headers = ['Name', 'Email', 'Phone', 'House No'];
     const rows = filteredMembers.map((member) => [member.name, member.email, member.phone || '', member.flat_no]);
@@ -134,7 +124,6 @@ export default function Members({ user }) {
         {user.role === 'admin' && (
           <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>Add Member</button>
         )}
-        <button className="btn btn-outline-secondary" onClick={exportCsv}>Export CSV</button>
         <button className="btn btn-outline-secondary" onClick={exportPdf}>Export PDF</button>
       </div>
     </div>

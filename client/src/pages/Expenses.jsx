@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api';
 import AutoDismissAlert from '../components/AutoDismissAlert';
-import { downloadBlob, downloadCsv, downloadPdf, formatDate } from '../utils';
+import { downloadBlob, downloadPdf, formatDate } from '../utils';
 import Pagination from '../components/Pagination';
 
 const PAGE_SIZE = 10;
@@ -124,17 +124,6 @@ export default function Expenses({ user }) {
     setIsModalOpen(false);
   };
 
-  const exportCsv = () => {
-    const headers = ['Date', 'Category', 'Amount', 'Description'];
-    const rows = filteredExpenses.map((expense) => [formatDate(expense.expense_date), expense.category, expense.amount, expense.description]);
-    const summaryRows = [
-      ['Total expenses', summary.total],
-      ['Filtered', summary.filtered],
-      ['Amount', `${summary.amount.toFixed(2)}`],
-    ];
-    downloadCsv('expenses.csv', headers, rows, summaryRows);
-  };
-
   const exportPdf = () => {
     const headers = ['Date', 'Category', 'Amount', 'Description'];
     const rows = filteredExpenses.map((expense) => [formatDate(expense.expense_date), expense.category, expense.amount, expense.description]);
@@ -170,7 +159,6 @@ export default function Expenses({ user }) {
         {user.role === 'admin' && (
           <button className="btn btn-primary" onClick={() => setIsModalOpen(true)}>Add Expense</button>
         )}
-        <button className="btn btn-outline-secondary" onClick={exportCsv}>Export CSV</button>
         <button className="btn btn-outline-secondary" onClick={exportPdf}>Export PDF</button>
       </div>
     </div>

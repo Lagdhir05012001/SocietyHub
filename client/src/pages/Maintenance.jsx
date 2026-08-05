@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api';
 import AutoDismissAlert from '../components/AutoDismissAlert';
-import { downloadBlob, downloadCsv, downloadPdf, formatDateTime } from '../utils';
+import { downloadBlob, downloadPdf, formatDateTime } from '../utils';
 import Pagination from '../components/Pagination';
 
 const PAGE_SIZE = 10;
@@ -162,19 +162,6 @@ export default function Maintenance({ user }) {
     setIsModalOpen(false);
   };
 
-  const exportCsv = () => {
-    const headers = ['Month', 'Member', 'House No', 'Amount', 'Description', 'Status', 'Payment Mode', 'Paid Date'];
-    const rows = filteredRecords.map((record) => [record.month_year, record.member_name, record.flat_no, record.amount, record.description || '-', record.status, record.payment_mode || '-', formatDateTime(record.paid_date)]);
-    const summaryRows = [
-      ['Total records', summary.total],
-      ['Filtered', summary.filtered],
-      ['Total amount', `${summary.amount.toFixed(2)}`],
-      ['Paid amount', `${summary.paidAmount.toFixed(2)}`],
-      ['Unpaid amount', `${summary.unpaidAmount.toFixed(2)}`],
-    ];
-    downloadCsv('maintenance.csv', headers, rows, summaryRows);
-  };
-
   const exportPdf = () => {
     const headers = ['Month', 'Member', 'House No', 'Amount', 'Description', 'Status', 'Payment Mode', 'Paid Date'];
     const rows = filteredRecords.map((record) => [record.month_year, record.member_name, record.flat_no, record.amount, record.description || '-', record.status, record.payment_mode || '-', formatDateTime(record.paid_date)]);
@@ -221,7 +208,6 @@ export default function Maintenance({ user }) {
             <button className="btn btn-success" onClick={() => setIsGenerateModalOpen(true)}>Generate</button>
           </>
         )}
-        <button className="btn btn-outline-secondary" onClick={exportCsv}>Export CSV</button>
         <button className="btn btn-outline-secondary" onClick={exportPdf}>Export PDF</button>
       </div>
     </div>
