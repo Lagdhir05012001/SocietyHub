@@ -261,7 +261,7 @@ export default function SocietyCorner({ user }) {
                   ))}
                   {filteredDocuments.length === 0 && (
                     <tr>
-                      <td colSpan={user.role === 'admin' ? 5 : 4} className="text-center text-muted py-4">
+                      <td colSpan={user.role === 'admin' ? 5 : 4} className="text-center py-4">
                         No records found.
                       </td>
                     </tr>
