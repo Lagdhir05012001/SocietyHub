@@ -1,0 +1,5 @@
+:root { font-family: 'DM Sans', 'Trebuchet MS', sans-serif; color: #172225; background: #f7f8f7; font-synthesis: none; text-rendering: optimizeLegibility; -webkit-font-smoothing: antialiased; }
+* { box-sizing: border-box; }
+body { margin: 0; min-width: 320px; }
+button, input { font: inherit; }
+button { cursor: pointer; }
