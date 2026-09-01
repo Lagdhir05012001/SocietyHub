@@ -217,7 +217,7 @@ app.get('/dashboard', verifyToken, async (req, res) => {
 
 app.get('/members', verifyToken, async (req, res) => {
   try {
-    const members = await query('SELECT id, name, email, phone, flat_no, profile_image, created_at FROM users WHERE role = ? ORDER BY created_at DESC', ['member']);
+    const members = await query('SELECT id, name, email, phone, flat_no, profile_image, created_at, updated_at FROM users WHERE role = ? ORDER BY created_at DESC', ['member']);
     res.json(members);
   } catch (error) {
     console.error(error);
@@ -227,7 +227,7 @@ app.get('/members', verifyToken, async (req, res) => {
 
 app.get('/members/:id', verifyToken, async (req, res) => {
   try {
-    const [member] = await query('SELECT id, name, email, phone, flat_no, profile_image, created_at FROM users WHERE id = ? AND role = ?', [req.params.id, 'member']);
+    const [member] = await query('SELECT id, name, email, phone, flat_no, profile_image, created_at, updated_at FROM users WHERE id = ? AND role = ?', [req.params.id, 'member']);
     if (!member) {
       return res.status(404).json({ error: 'Member not found' });
     }
@@ -327,7 +327,7 @@ app.delete('/members/:id', verifyToken, requireAdmin, async (req, res) => {
 
 app.get('/workers', verifyToken, async (req, res) => {
   try {
-    const workers = await query('SELECT id, name, phone, type, salary, profile_image, created_at FROM workers ORDER BY created_at DESC');
+    const workers = await query('SELECT id, name, phone, type, salary, profile_image, created_at, updated_at FROM workers ORDER BY created_at DESC');
     res.json(workers);
   } catch (error) {
     console.error(error);
@@ -337,7 +337,7 @@ app.get('/workers', verifyToken, async (req, res) => {
 
 app.get('/workers/:id', verifyToken, async (req, res) => {
   try {
-    const [worker] = await query('SELECT id, name, phone, type, salary, profile_image, created_at FROM workers WHERE id = ?', [req.params.id]);
+    const [worker] = await query('SELECT id, name, phone, type, salary, profile_image, created_at, updated_at FROM workers WHERE id = ?', [req.params.id]);
     if (!worker) {
       return res.status(404).json({ error: 'Worker not found' });
     }
@@ -425,7 +425,7 @@ app.delete('/workers/:id', verifyToken, requireAdmin, async (req, res) => {
 app.get('/attendance', verifyToken, async (req, res) => {
   try {
     const attendance = await query(
-      'SELECT a.id, a.worker_id, w.name AS worker_name, w.type AS worker_type, a.date, a.shift, a.status FROM attendance a JOIN workers w ON a.worker_id = w.id ORDER BY a.date DESC, a.created_at DESC'
+      'SELECT a.id, a.worker_id, w.name AS worker_name, w.type AS worker_type, a.date, a.shift, a.status, a.created_at, a.updated_at FROM attendance a JOIN workers w ON a.worker_id = w.id ORDER BY a.date DESC, a.created_at DESC'
     );
     res.json(attendance);
   } catch (error) {
@@ -545,7 +545,7 @@ app.delete('/attendance/:id', verifyToken, requireAdmin, async (req, res) => {
 app.get('/expenses', verifyToken, async (req, res) => {
   try {
     const expenses = await query(
-        'SELECT e.id, e.category, e.expense_date, e.amount, e.description, e.created_at, GROUP_CONCAT(p.id SEPARATOR "||") AS proof_ids, GROUP_CONCAT(p.filename SEPARATOR "||") AS proofs, GROUP_CONCAT(p.original_filename SEPARATOR "||") AS proof_names FROM expenses e LEFT JOIN expense_proofs p ON e.id = p.expense_id GROUP BY e.id, e.category, e.expense_date, e.amount, e.description, e.created_at ORDER BY e.expense_date DESC, e.created_at DESC'
+        'SELECT e.id, e.category, e.expense_date, e.amount, e.description, e.created_at, e.updated_at, GROUP_CONCAT(p.id SEPARATOR "||") AS proof_ids, GROUP_CONCAT(p.filename SEPARATOR "||") AS proofs, GROUP_CONCAT(p.original_filename SEPARATOR "||") AS proof_names FROM expenses e LEFT JOIN expense_proofs p ON e.id = p.expense_id GROUP BY e.id, e.category, e.expense_date, e.amount, e.description, e.created_at, e.updated_at ORDER BY e.expense_date DESC, e.created_at DESC'
     );
     res.json(expenses.map((row) => {
         const ids = row.proof_ids ? row.proof_ids.split('||') : [];
@@ -653,7 +653,7 @@ app.delete('/expenses/:id', verifyToken, requireAdmin, async (req, res) => {
 app.get('/maintenance', verifyToken, async (req, res) => {
   try {
     const records = await query(
-        'SELECT m.id, m.member_id, u.name AS member_name, u.flat_no, m.month_year, m.amount, m.description, m.status, m.payment_mode, m.paid_date, m.created_at, GROUP_CONCAT(p.id SEPARATOR "||") AS proof_ids, GROUP_CONCAT(p.filename SEPARATOR "||") AS proofs, GROUP_CONCAT(p.original_filename SEPARATOR "||") AS proof_names FROM maintenance m JOIN users u ON m.member_id = u.id LEFT JOIN maintenance_proofs p ON m.id = p.maintenance_id GROUP BY m.id, m.member_id, u.name, u.flat_no, m.month_year, m.amount, m.description, m.status, m.payment_mode, m.paid_date, m.created_at ORDER BY m.month_year DESC, m.created_at DESC'
+        'SELECT m.id, m.member_id, u.name AS member_name, u.flat_no, m.month_year, m.amount, m.description, m.status, m.payment_mode, m.paid_date, m.created_at, m.updated_at, GROUP_CONCAT(p.id SEPARATOR "||") AS proof_ids, GROUP_CONCAT(p.filename SEPARATOR "||") AS proofs, GROUP_CONCAT(p.original_filename SEPARATOR "||") AS proof_names FROM maintenance m JOIN users u ON m.member_id = u.id LEFT JOIN maintenance_proofs p ON m.id = p.maintenance_id GROUP BY m.id, m.member_id, u.name, u.flat_no, m.month_year, m.amount, m.description, m.status, m.payment_mode, m.paid_date, m.created_at, m.updated_at ORDER BY m.month_year DESC, m.created_at DESC'
     );
     res.json(records.map((row) => {
         const ids = row.proof_ids ? row.proof_ids.split('||') : [];
@@ -788,7 +788,7 @@ app.post('/maintenance/generate', verifyToken, requireAdmin, async (req, res) =>
 app.get('/tharav', verifyToken, async (req, res) => {
   try {
     const records = await query(
-        'SELECT id, tharav_number, tharav_date, description, pdf_filename, pdf_original_filename, created_at FROM tharav ORDER BY created_at DESC'
+        'SELECT id, tharav_number, tharav_date, description, pdf_filename, pdf_original_filename, created_at, updated_at FROM tharav ORDER BY created_at DESC'
     );
     res.json(records);
   } catch (error) {
@@ -956,7 +956,7 @@ app.get('/download/society-corner/:id', verifyToken, async (req, res) => {
 app.get('/society-corner', verifyToken, async (req, res) => {
   try {
     const records = await query(
-      'SELECT id, file_name, document_date, pdf_filename, pdf_original_filename, created_at FROM society_corner_documents ORDER BY document_date DESC, created_at DESC'
+      'SELECT id, file_name, document_date, pdf_filename, pdf_original_filename, created_at, updated_at FROM society_corner_documents ORDER BY document_date DESC, created_at DESC'
     );
     res.json(records);
   } catch (error) {

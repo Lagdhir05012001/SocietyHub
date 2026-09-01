@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api';
 import AutoDismissAlert from '../components/AutoDismissAlert';
-import { downloadPdf } from '../utils';
+import { downloadPdf, formatDateTime } from '../utils';
 import Pagination from '../components/Pagination';
 
 const PAGE_SIZE = 10;
@@ -209,6 +209,7 @@ export default function Workers({ user }) {
                     <th>Type</th>
                     <th>Phone</th>
                     <th>Salary</th>
+                    <th>Created At / Updated At</th>
                     {user.role === 'admin' && <th>Actions</th>}
                   </tr>
                 </thead>
@@ -234,6 +235,10 @@ export default function Workers({ user }) {
                       <td>{worker.type}</td>
                       <td>{worker.phone}</td>
                       <td>{worker.salary}</td>
+                      <td>
+                        <div>{formatDateTime(worker.created_at)}</div>
+                        <div>{formatDateTime(worker.updated_at)}</div>
+                      </td>
                       {user.role === 'admin' && (
                         <td>
                           <button className="btn btn-sm btn-outline-secondary me-2" onClick={() => startEdit(worker)}>Edit</button>
@@ -244,7 +249,7 @@ export default function Workers({ user }) {
                   ))}
                   {displayedWorkers.length === 0 && (
                     <tr>
-                      <td colSpan={user.role === 'admin' ? 7 : 6} className="text-center py-3">No records found.</td>
+                      <td colSpan={user.role === 'admin' ? 8 : 7} className="text-center py-3">No records found.</td>
                     </tr>
                   )}
                 </tbody>

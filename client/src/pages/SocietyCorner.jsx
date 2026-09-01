@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api';
 import AutoDismissAlert from '../components/AutoDismissAlert';
-import { downloadBlob, formatDate } from '../utils';
+import { downloadBlob, formatDate, formatDateTime } from '../utils';
 
 export default function SocietyCorner({ user }) {
   const [documents, setDocuments] = useState([]);
@@ -229,6 +229,7 @@ export default function SocietyCorner({ user }) {
                     <th>File Name</th>
                     <th>Date</th>
                     <th>Document</th>
+                    <th>Created At / Updated At</th>
                     {user.role === 'admin' && <th>Actions</th>}
                   </tr>
                 </thead>
@@ -251,6 +252,10 @@ export default function SocietyCorner({ user }) {
                           '-'
                         )}
                       </td>
+                      <td>
+                        <div>{formatDateTime(document.created_at)}</div>
+                        <div>{formatDateTime(document.updated_at)}</div>
+                      </td>
                       {user.role === 'admin' && (
                         <td>
                           <button className="btn btn-sm btn-outline-secondary me-2" onClick={() => startEdit(document)}>Edit</button>
@@ -261,7 +266,7 @@ export default function SocietyCorner({ user }) {
                   ))}
                   {filteredDocuments.length === 0 && (
                     <tr>
-                      <td colSpan={user.role === 'admin' ? 5 : 4} className="text-center py-4">
+                      <td colSpan={user.role === 'admin' ? 6 : 5} className="text-center py-4">
                         No records found.
                       </td>
                     </tr>

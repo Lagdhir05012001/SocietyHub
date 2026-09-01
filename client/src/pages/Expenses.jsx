@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api';
 import AutoDismissAlert from '../components/AutoDismissAlert';
-import { downloadBlob, downloadPdf, formatDate } from '../utils';
+import { downloadBlob, downloadPdf, formatDate, formatDateTime } from '../utils';
 import Pagination from '../components/Pagination';
 
 const PAGE_SIZE = 10;
@@ -296,6 +296,7 @@ export default function Expenses({ user }) {
                     <th>Amount</th>
                     <th>Description</th>
                     <th>Proofs</th>
+                    <th>Created At / Updated At</th>
                     {user.role === 'admin' && <th>Actions</th>}
                   </tr>
                 </thead>
@@ -320,6 +321,10 @@ export default function Expenses({ user }) {
                           })
                           : '-'}
                       </td>
+                      <td>
+                        <div>{formatDateTime(expense.created_at)}</div>
+                        <div>{formatDateTime(expense.updated_at)}</div>
+                      </td>
                       {user.role === 'admin' && (
                         <td>
                           <button className="btn btn-sm btn-outline-secondary me-2" onClick={() => startEdit(expense)}>Edit</button>
@@ -330,7 +335,7 @@ export default function Expenses({ user }) {
                   ))}
                   {displayedExpenses.length === 0 && (
                     <tr>
-                      <td colSpan={user.role === 'admin' ? 7 : 6} className="text-center py-3">No records found.</td>
+                      <td colSpan={user.role === 'admin' ? 8 : 7} className="text-center py-3">No records found.</td>
                     </tr>
                   )}
                 </tbody>

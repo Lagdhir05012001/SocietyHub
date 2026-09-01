@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import api from '../api';
-import { downloadPdf, formatDate } from '../utils';
+import { downloadPdf, formatDate, formatDateTime } from '../utils';
 import Pagination from '../components/Pagination';
 import AutoDismissAlert from '../components/AutoDismissAlert';
 
@@ -316,6 +316,7 @@ export default function Attendance({ user }) {
                     <th>Type</th>
                     <th>Shift</th>
                     <th>Status</th>
+                    <th>Created At / Updated At</th>
                     {user.role === 'admin' && <th>Actions</th>}
                   </tr>
                 </thead>
@@ -332,6 +333,10 @@ export default function Attendance({ user }) {
                           {record.status}
                         </span>
                       </td>
+                      <td>
+                        <div>{formatDateTime(record.created_at)}</div>
+                        <div>{formatDateTime(record.updated_at)}</div>
+                      </td>
                       {user.role === 'admin' && (
                         <td>
                           <button className="btn btn-sm btn-outline-secondary me-2" onClick={() => startEdit(record)}>Edit</button>
@@ -342,7 +347,7 @@ export default function Attendance({ user }) {
                   ))}
                   {displayedAttendance.length === 0 && (
                     <tr>
-                      <td colSpan={user.role === 'admin' ? 7 : 6} className="text-center py-3">No records found.</td>
+                      <td colSpan={user.role === 'admin' ? 8 : 7} className="text-center py-3">No records found.</td>
                     </tr>
                   )}
                 </tbody>

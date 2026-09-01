@@ -425,6 +425,7 @@ export default function Maintenance({ user }) {
                     <th>Payment Mode</th>
                     <th>Paid Date</th>
                     <th>Proofs</th>
+                    <th>Created At / Updated At</th>
                     {user.role === 'admin' && <th>Actions</th>}
                   </tr>
                 </thead>
@@ -456,6 +457,10 @@ export default function Maintenance({ user }) {
                             })
                           : '-'}
                       </td>
+                      <td>
+                        <div>{formatDateTime(record.created_at)}</div>
+                        <div>{formatDateTime(record.updated_at)}</div>
+                      </td>
                       {user.role === 'admin' && (
                         <td>
                           {/* <button
@@ -472,7 +477,7 @@ export default function Maintenance({ user }) {
                   ))}
                   {displayedRecords.length === 0 && (
                     <tr>
-                      <td colSpan={user.role === 'admin' ? 11 : 10} className="text-center py-3">No records found.</td>
+                      <td colSpan={user.role === 'admin' ? 12 : 11} className="text-center py-3">No records found.</td>
                     </tr>
                   )}
                 </tbody>
