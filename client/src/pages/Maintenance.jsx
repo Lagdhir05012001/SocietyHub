@@ -436,7 +436,7 @@ export default function Maintenance({ user }) {
                       <td>{record.member_name}</td>
                       <td>{record.flat_no}</td>
                       <td>{record.amount}</td>
-                      <td>{record.description || '-'}</td>
+                      <td className="description-cell">{record.description || '-'}</td>
                       <td>
                         <span className={record.status === 'Paid' ? 'text-success opacity-75' : 'text-danger opacity-75'}>
                           {record.status === 'Paid' ? '✔️' : '❌'}

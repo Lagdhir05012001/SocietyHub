@@ -306,7 +306,7 @@ export default function Expenses({ user }) {
                       <td>{formatDate(expense.expense_date)}</td>
                       <td>{expense.category}</td>
                       <td>{expense.amount}</td>
-                      <td>{expense.description}</td>
+                      <td className="description-cell">{expense.description}</td>
                       <td>
                         {expense.proofs && expense.proofs.length > 0
                           ? expense.proofs.map((proof, i) => {
