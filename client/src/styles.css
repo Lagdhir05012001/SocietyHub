@@ -155,6 +155,14 @@ body {
   word-break: break-word;
 }
 
+.description-cell {
+  max-width: 260px;
+  min-width: 180px;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
 .form-control,
 .form-select,
 .btn {
