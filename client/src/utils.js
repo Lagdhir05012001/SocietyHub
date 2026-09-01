@@ -81,6 +81,9 @@ export async function downloadPdf(filename, title, headers, rows, summaryRows = 
   const margin = 14;
   const pageWidth = doc.internal.pageSize.getWidth();
 
+  const serialHeaders = ['Sr No', ...headers];
+  const serialRows = rows.map((row, index) => [String(index + 1), ...row]);
+
   let logoImage = null;
   try {
     logoImage = await loadImageAsset(logoUrl);
@@ -89,6 +92,7 @@ export async function downloadPdf(filename, title, headers, rows, summaryRows = 
   }
 
   doc.setFontSize(14);
+  doc.setFont('helvetica', 'bold');
   doc.text(title, margin, 20);
 
   if (logoImage) {
@@ -106,7 +110,12 @@ export async function downloadPdf(filename, title, headers, rows, summaryRows = 
   if (summaryRows.length > 0) {
     doc.setFontSize(10);
     summaryRows.forEach(([label, value]) => {
-      doc.text(`${label}: ${value}`, margin, startY);
+      const labelText = `${label}: `;
+      const valueText = String(value ?? '');
+      const gap = 2;
+      doc.setFont('helvetica', 'bold');
+      doc.text(labelText, margin, startY);
+      doc.text(valueText, margin + doc.getTextWidth(labelText) + gap, startY);
       startY += 6;
     });
     startY += 6;
@@ -114,15 +123,15 @@ export async function downloadPdf(filename, title, headers, rows, summaryRows = 
 
   autoTable(doc, {
     startY,
-    head: [headers],
-    body: rows,
+    head: [serialHeaders],
+    body: serialRows,
     theme: 'grid',
-    styles: { fontSize: 10 },
-    headStyles: { fillColor: [41, 128, 185] },
+    styles: { fontSize: 10, fontStyle: 'normal', textColor: [0, 0, 0] },
+    headStyles: { fillColor: [41, 128, 185], fontStyle: 'bold', textColor: [255, 255, 255] },
+    columnStyles: { 0: { halign: 'center', cellWidth: 18 } },
     didParseCell: (data) => {
       if (data.row.section === 'body' && statusColumnIndex !== null) {
-        console.log( data.row.raw[statusColumnIndex])
-        const statusValue = data.row.raw[statusColumnIndex];
+        const statusValue = data.row.raw[statusColumnIndex + 1];
         if (statusValue === 'Present') {
           data.cell.styles.fillColor = [220, 255, 220];
           data.cell.styles.textColor = [0, 100, 0];
@@ -137,16 +146,20 @@ export async function downloadPdf(filename, title, headers, rows, summaryRows = 
   let nextStartY = doc.lastAutoTable.finalY + 10;
   tables.forEach((table) => {
     if (!table || !table.headers || !table.rows) return;
+    const serialSummaryHeaders = ['Sr No', ...table.headers];
+    const serialSummaryRows = table.rows.map((row, index) => [String(index + 1), ...row]);
     doc.setFontSize(12);
+    doc.setFont('helvetica', 'bold');
     doc.text(table.title || 'Summary', margin, nextStartY);
     nextStartY += 6;
     autoTable(doc, {
       startY: nextStartY,
-      head: [table.headers],
-      body: table.rows,
+      head: [serialSummaryHeaders],
+      body: serialSummaryRows,
       theme: 'grid',
-      styles: { fontSize: 10 },
-      headStyles: { fillColor: [41, 128, 185] },
+      styles: { fontSize: 10, fontStyle: 'normal', textColor: [0, 0, 0] },
+      headStyles: { fillColor: [41, 128, 185], fontStyle: 'bold', textColor: [255, 255, 255] },
+      columnStyles: { 0: { halign: 'center', cellWidth: 18 } },
     });
     nextStartY = doc.lastAutoTable.finalY + 10;
   });
